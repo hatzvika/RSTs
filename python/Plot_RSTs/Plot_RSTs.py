@@ -293,7 +293,7 @@ def main():
                 trough_length = trough_coordinates.shape[0]
                 trough_deg_coordinates = np.zeros((trough_length, 2))
                 for loop in range(trough_length):
-                    trough_deg_coordinates[loop, 0] = rst_lat1 + ((loop) * interp_resolution)
+                    trough_deg_coordinates[loop, 0] = rst_lat1 + ((loop - 1) * interp_resolution)
                     trough_deg_coordinates[loop, 1] = rst_lon1 + ((trough_coordinates[loop]) * interp_resolution)
 
                 x_trough, y_trough = map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
