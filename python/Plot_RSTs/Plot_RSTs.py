@@ -1,49 +1,28 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
 from netCDF4 import Dataset, num2date
+from mpl_toolkits.basemap import Basemap
 from mpl_toolkits import basemap
 
+# My imports
 from python.Plot_RSTs.find_trough import find_trough
+import python.Plot_RSTs.plot_RST_constants as consts
 
 
 def main():
     use_interpolation = 1
     show_vorticity = 0
     show_geostrophic_vorticity = 1
-    show_dots = 1
+    show_dots = 0
     show_rst_info = 1
     # For the interpolation - order	0 for nearest-neighbor interpolation, 1 for bilinear interpolation, 3 for cublic spline (default 1). order=3 requires scipy.ndimage.
     interpolation_method = 3
     save_maps = 0
     display_maps = 1
 
-    map_lat1 = 25
-    map_lat2 = 45
-    map_lon1 = 25
-    map_lon2 = 45
-    rst_lat1 = 27.5
-    rst_lat2 = 32.5
-    rst_lon1 = 32.5
-    rst_lon2 = 42.5
-    rst_square1_lat1 = 27
-    rst_square1_lat2 = 31
-    rst_square1_lon1 = 33
-    rst_square1_lon2 = 37
-    rst_square2_lat1 = 31
-    rst_square2_lat2 = 35
-    rst_square2_lon1 = 33
-    rst_square2_lon2 = 37
-    rst_square3_lat1 = 29
-    rst_square3_lat2 = 33
-    rst_square3_lon1 = 34
-    rst_square3_lon2 = 36
 
-    # processed_data_prefix = 'C:\Users\Tzvika\Documents\Geography\Dry_Spells\Processed_data\';
-    raw_data_prefix = "C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/Raw_data/"
-
-    slp_filename = raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
+    slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
     slp_nc = Dataset(slp_filename)
     slp_data = np.flip(np.squeeze(slp_nc.variables['slp'][2:-1:4, :, :]), 1) # Take only the 12Z data
     slp_lats = np.flip(slp_nc.variables['lat'][:], 0)  # flipping because nc files come with descending lats
@@ -53,10 +32,10 @@ def main():
     data_resolution = slp_lats[1] - slp_lats[0]
 
     if show_vorticity == 1:
-        uwind_filename = raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
+        uwind_filename = consts.raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
         uwind_nc = Dataset(uwind_filename)
         uwind_data = np.flip(np.squeeze(uwind_nc.variables['uwnd'][2:-1:4, :, :]), 1) # Take only the 12Z data
-        vwind_filename = raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
+        vwind_filename = consts.raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
         vwind_nc = Dataset(vwind_filename)
         vwind_data = np.flip(np.squeeze(vwind_nc.variables['vwnd'][2:-1:4, :, :]), 1) # Take only the 12Z data
 
@@ -201,25 +180,25 @@ def main():
         lowest_lat = slp_lats[0]
         lowest_lon = slp_lons[0]
         multiplier = 1 / func_interp_resolution
-        indexed_rst_lat1 = int((rst_lat1 - lowest_lat) * multiplier)
-        indexed_rst_lat2 = int((rst_lat2 - lowest_lat) * multiplier)
-        indexed_rst_lon1 = int((rst_lon1 - lowest_lon) * multiplier)
-        indexed_rst_lon2 = int((rst_lon2 - lowest_lon) * multiplier)
+        indexed_rst_lat1 = int((consts.rst_lat1 - lowest_lat) * multiplier)
+        indexed_rst_lat2 = int((consts.rst_lat2 - lowest_lat) * multiplier)
+        indexed_rst_lon1 = int((consts.rst_lon1 - lowest_lon) * multiplier)
+        indexed_rst_lon2 = int((consts.rst_lon2 - lowest_lon) * multiplier)
         trough_matrix = temp_slp_data[indexed_rst_lat1:indexed_rst_lat2+1, indexed_rst_lon1: indexed_rst_lon2+1]
         trough_coordinates = find_trough(trough_matrix)
 
         # Calculate the mean SLP in the RST squares
-        indexed_rst_square1_lat1 = math.ceil((rst_square1_lat1 - lowest_lat) * multiplier)
-        indexed_rst_square1_lat2 = math.floor((rst_square1_lat2 - lowest_lat) * multiplier)
-        indexed_rst_square1_lon1 = math.ceil((rst_square1_lon1 - lowest_lat) * multiplier)
-        indexed_rst_square1_lon2 = math.floor((rst_square1_lon2 - lowest_lat) * multiplier)
+        indexed_rst_square1_lat1 = math.ceil((consts.rst_square1_lat1 - lowest_lat) * multiplier)
+        indexed_rst_square1_lat2 = math.floor((consts.rst_square1_lat2 - lowest_lat) * multiplier)
+        indexed_rst_square1_lon1 = math.ceil((consts.rst_square1_lon1 - lowest_lat) * multiplier)
+        indexed_rst_square1_lon2 = math.floor((consts.rst_square1_lon2 - lowest_lat) * multiplier)
         mean_slp_square1 = np.mean(np.mean(temp_slp_data[indexed_rst_square1_lat1:indexed_rst_square1_lat2+1, indexed_rst_square1_lon1:indexed_rst_square1_lon2+1])) / 100
         print("mean SLP at square 1: %f", mean_slp_square1)
 
-        indexed_rst_square2_lat1 = math.ceil((rst_square2_lat1 - lowest_lat) * multiplier)
-        indexed_rst_square2_lat2 = math.floor((rst_square2_lat2 - lowest_lat) * multiplier)
-        indexed_rst_square2_lon1 = math.ceil((rst_square2_lon1 - lowest_lat) * multiplier)
-        indexed_rst_square2_lon2 = math.floor((rst_square2_lon2 - lowest_lat) * multiplier)
+        indexed_rst_square2_lat1 = math.ceil((consts.rst_square2_lat1 - lowest_lat) * multiplier)
+        indexed_rst_square2_lat2 = math.floor((consts.rst_square2_lat2 - lowest_lat) * multiplier)
+        indexed_rst_square2_lon1 = math.ceil((consts.rst_square2_lon1 - lowest_lat) * multiplier)
+        indexed_rst_square2_lon2 = math.floor((consts.rst_square2_lon2 - lowest_lat) * multiplier)
         mean_slp_square2 = np.mean(np.mean(temp_slp_data[indexed_rst_square2_lat1:indexed_rst_square2_lat2+1, indexed_rst_square2_lon1:indexed_rst_square2_lon2+1])) / 100
         print("mean SLP at square 2: %f", mean_slp_square2)
 
@@ -229,10 +208,10 @@ def main():
                 vort_multiplier = 1 / interp_resolution
             else:
                 vort_multiplier = 1 / data_resolution
-            indexed_rst_square3_lat1 = math.ceil((rst_square3_lat1 - lowest_lat) * vort_multiplier)
-            indexed_rst_square3_lat2 = math.floor((rst_square3_lat2 - lowest_lat) * vort_multiplier)
-            indexed_rst_square3_lon1 = math.ceil((rst_square3_lon1 - lowest_lat) * vort_multiplier)
-            indexed_rst_square3_lon2 = math.floor((rst_square3_lon2 - lowest_lat) * vort_multiplier)
+            indexed_rst_square3_lat1 = math.ceil((consts.rst_square3_lat1 - lowest_lat) * vort_multiplier)
+            indexed_rst_square3_lat2 = math.floor((consts.rst_square3_lat2 - lowest_lat) * vort_multiplier)
+            indexed_rst_square3_lon1 = math.ceil((consts.rst_square3_lon1 - lowest_lat) * vort_multiplier)
+            indexed_rst_square3_lon2 = math.floor((consts.rst_square3_lon2 - lowest_lat) * vort_multiplier)
             mean_geos_vort_square3 = np.mean(np.mean(geostrophic_vorticity_map[indexed_rst_square3_lat1:indexed_rst_square3_lat2+1, indexed_rst_square3_lon1:indexed_rst_square3_lon2+1])) / 100
             print("mean Geostrophic Vorticity at square 3: %f", mean_geos_vort_square3)
 
@@ -257,20 +236,20 @@ def main():
                 size_x = 20
                 size_y = size_x/aspect_ratio
             fig = plt.figure(num=None, figsize=(size_x, size_y ), dpi=80, facecolor='w', edgecolor='k')
-            map = Basemap(llcrnrlon=map_lon1, llcrnrlat=map_lat1, urcrnrlon=map_lon2, urcrnrlat=map_lat2, projection='merc', resolution='i')
+            map = Basemap(llcrnrlon=consts.map_lon1, llcrnrlat=consts.map_lat1, urcrnrlon=consts.map_lon2, urcrnrlat=consts.map_lat2, projection='merc', resolution='i')
             map.drawcoastlines()
             #map.fillcontinents(color='coral', lake_color='aqua')
             # draw parallels and meridians.
-            map.drawparallels(np.arange(map_lat1, map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
-            map.drawmeridians(np.arange(map_lon1, map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
+            map.drawparallels(np.arange(consts.map_lat1, consts.map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
+            map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
             #map.drawmapboundary(fill_color='aqua')
             plt.title("Red Sea Troughs")
 
             if show_vorticity == 1:
-                lon1_index = int(np.where(slp_lons == map_lon1)[0])
-                lon2_index = int(np.where(slp_lons == map_lon2)[0])
-                lat1_index = int(np.where(slp_lats == map_lat1)[0])
-                lat2_index = int(np.where(slp_lats == map_lat2)[0])
+                lon1_index = int(np.where(slp_lons == consts.map_lon1)[0])
+                lon2_index = int(np.where(slp_lons == consts.map_lon2)[0])
+                lat1_index = int(np.where(slp_lats == consts.map_lat1)[0])
+                lat2_index = int(np.where(slp_lats == consts.map_lat2)[0])
                 subset_vorticity_map = vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
                 mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
                 x, y = map(mesh_lons, mesh_lats)
@@ -282,10 +261,10 @@ def main():
                 map.colorbar()
 
             if show_geostrophic_vorticity == 1:
-                lon1_index = int(np.where(slp_lons == map_lon1)[0])
-                lon2_index = int(np.where(slp_lons == map_lon2)[0])
-                lat1_index = int(np.where(slp_lats == map_lat1)[0])
-                lat2_index = int(np.where(slp_lats == map_lat2)[0])
+                lon1_index = int(np.where(slp_lons == consts.map_lon1)[0])
+                lon2_index = int(np.where(slp_lons == consts.map_lon2)[0])
+                lat1_index = int(np.where(slp_lats == consts.map_lat1)[0])
+                lat2_index = int(np.where(slp_lats == consts.map_lat2)[0])
                 subset_geostrophic_vorticity_map = geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
                 mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
                 x, y = map(mesh_lons, mesh_lats)
@@ -315,7 +294,7 @@ def main():
                             if ridges_map[current_lat, current_lon] == 1:
                                 map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
             # Add the date
-            x_dot, y_dot = map(map_lon1+1, map_lat2-1)
+            x_dot, y_dot = map(consts.map_lon1+1, consts.map_lat2-1)
             current_date = num2date(slp_time[0], slp_time.units)
             plt.text(x_dot, y_dot, current_date, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
@@ -324,24 +303,24 @@ def main():
                 trough_length = trough_coordinates.shape[0]
                 trough_deg_coordinates = np.zeros((trough_length, 2))
                 for loop in range(trough_length):
-                    trough_deg_coordinates[loop, 0] = rst_lat1 + ((loop - 1) * interp_resolution)
-                    trough_deg_coordinates[loop, 1] = rst_lon1 + ((trough_coordinates[loop]) * interp_resolution)
+                    trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop - 1) * interp_resolution)
+                    trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((trough_coordinates[loop]) * interp_resolution)
 
                 x_trough, y_trough = map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
                 map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
                 map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
 
             if show_rst_info == 1: # Draw box3 and the 2 points
-                lat_array_region = [rst_square3_lat1,
-                                    rst_square3_lat1,
-                                    rst_square3_lat2,
-                                    rst_square3_lat2,
-                                    rst_square3_lat1]
-                lon_array_region = [rst_square3_lon1,
-                                    rst_square3_lon2,
-                                    rst_square3_lon2,
-                                    rst_square3_lon1,
-                                    rst_square3_lon1]
+                lat_array_region = [consts.rst_square3_lat1,
+                                    consts.rst_square3_lat1,
+                                    consts.rst_square3_lat2,
+                                    consts.rst_square3_lat2,
+                                    consts.rst_square3_lat1]
+                lon_array_region = [consts.rst_square3_lon1,
+                                    consts.rst_square3_lon2,
+                                    consts.rst_square3_lon2,
+                                    consts.rst_square3_lon1,
+                                    consts.rst_square3_lon1]
                 x_region, y_region = map(lon_array_region, lat_array_region)
                 map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
                 if use_interpolation == 0:
@@ -355,11 +334,11 @@ def main():
                     if use_interpolation == 0:
                         data_string = "1st point: " + str(geostrophic_vorticity_map[4, 6])\
                                       +"  2nd point: " + str(geostrophic_vorticity_map[3, 6])
-                        x_dot, y_dot = map(map_lon1 + 1, map_lat2 - 2)
+                        x_dot, y_dot = map(consts.map_lon1 + 1, consts.map_lat2 - 2)
                         plt.text(x_dot, y_dot, data_string, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
                     # Add a note for met rst conditions
-                    x_dot, y_dot = map(map_lon1 + 1, map_lat2 - 3)
+                    x_dot, y_dot = map(consts.map_lon1 + 1, consts.map_lat2 - 3)
                     if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0):
                         plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
                     else:
