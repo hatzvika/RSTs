@@ -8,16 +8,15 @@ from mpl_toolkits import basemap
 from python.Plot_RSTs.find_trough import find_trough
 import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.read_nc_files import read_nc_files
+from python.utils.my_interp import my_interp
 
 
 def main():
-    use_interpolation = 0
+    use_interpolation = 1
     show_vorticity = 0
     show_geostrophic_vorticity = 1
     show_dots = 1
     show_rst_info = 1
-    # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
-    interpolation_method = 3
     save_maps = 0
     display_maps = 1
 
@@ -38,24 +37,24 @@ def main():
 
     # Interpolation of the data
     if use_interpolation:
-        [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1]+consts.interp_resolution, consts.interp_resolution),
-                                         np.arange(orig_data_lats[0], orig_data_lats[-1]+consts.interp_resolution, consts.interp_resolution))
-        temp_slp_data = np.zeros((total_days, x_dense.shape[0], y_dense.shape[0]))
+        # Find the interp lats and lons to create the temporary data holders.
+        _, interp_data_lats, interp_data_lons = my_interp(slp_data[0, :, :],
+                                                          orig_data_lats,
+                                                          orig_data_lons,
+                                                          consts.interp_resolution,
+                                                          consts.interpolation_method)
+        temp_slp_data = np.zeros((total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
 
         for current_day in range(total_days):
-            temp_slp_data[current_day, :, :] = basemap.interp(np.squeeze(slp_data[current_day,:,:]),
-                                                              orig_data_lons,
-                                                              orig_data_lats,
-                                                              x_dense,
-                                                              y_dense,
-                                                              order=interpolation_method)
-
+            temp_slp_data[current_day, :, :] = my_interp(slp_data[current_day, :, :],
+                                                         orig_data_lats,
+                                                         orig_data_lons,
+                                                         consts.interp_resolution,
+                                                         consts.interpolation_method)[0]
         slp_data = temp_slp_data
         # Create the interpolated version of lons and lats
         total_lat = slp_data.shape[1]
         total_lon = slp_data.shape[2]
-        interp_data_lats = np.arange(orig_data_lats[0], orig_data_lats[-1]+consts.interp_resolution, consts.interp_resolution)
-        interp_data_lons = np.arange(orig_data_lons[0], orig_data_lons[-1]+consts.interp_resolution, consts.interp_resolution)
 
     map_counter = 0
     is_rst_vector = np.zeros(total_days)
@@ -108,13 +107,13 @@ def main():
                                             orig_data_lats,
                                             x_dense,
                                             y_dense,
-                                            order=interpolation_method)
+                                            order=consts.interpolation_method)
                 vwind_map = basemap.interp(np.squeeze(vwind_data[current_day,:,:]),
                                             orig_data_lons,
                                             orig_data_lats,
                                             x_dense,
                                             y_dense,
-                                            order=interpolation_method)
+                                            order=consts.interpolation_method)
             else:
                 uwind_map = np.squeeze(uwind_data[current_day, :, :])
                 vwind_map = np.squeeze(vwind_data[current_day, :, :])
@@ -167,7 +166,7 @@ def main():
             [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1] + func_interp_resolution, func_interp_resolution),
                                              np.arange(orig_data_lats[0], orig_data_lats[-1] + func_interp_resolution, func_interp_resolution))
             temp_slp_data = basemap.interp(np.squeeze(slp_data[current_day, :, :]), orig_data_lons, orig_data_lats, x_dense,
-                                                                  y_dense, order=interpolation_method)
+                                                                  y_dense, order=consts.interpolation_method)
         else:
             temp_slp_data = np.squeeze(slp_data[current_day, :, :])
         lowest_lat = orig_data_lats[0]
