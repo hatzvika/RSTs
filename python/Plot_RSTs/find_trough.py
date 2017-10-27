@@ -58,7 +58,7 @@ def find_trough(slp_matrix):
             if maximum_diff == 0:
                 break
 
-    if not all(trough_coords):
-        trough_coords = trough_coords[trough_coords > 0]
+    # Remove the trailing zeros at the end of trough_coords
+    trough_coords = trough_coords[trough_coords > 0]
 
     return trough_coords

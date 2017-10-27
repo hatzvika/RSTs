@@ -7,21 +7,22 @@ from mpl_toolkits import basemap
 
 from python.Plot_RSTs.find_trough import find_trough
 
+
 def main():
     use_interpolation = 1
     show_vorticity = 0
     show_geostrophic_vorticity = 1
-    show_dots = 0
+    show_dots = 1
     show_rst_info = 1
     # For the interpolation - order	0 for nearest-neighbor interpolation, 1 for bilinear interpolation, 3 for cublic spline (default 1). order=3 requires scipy.ndimage.
     interpolation_method = 3
     save_maps = 0
     display_maps = 1
 
-    lat1 = 25
-    lat2 = 45
-    lon1 = 25
-    lon2 = 45
+    map_lat1 = 25
+    map_lat2 = 45
+    map_lon1 = 25
+    map_lon2 = 45
     rst_lat1 = 27.5
     rst_lat2 = 32.5
     rst_lon1 = 32.5
@@ -127,12 +128,31 @@ def main():
 
         # Calculate Vorticity
         if show_vorticity == 1:
-            uwind_map = np.squeeze(uwind_data[current_day, :, :])
-            vwind_map = np.squeeze(vwind_data[current_day, :, :])
+            interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
+            uwind_lats = np.flip(uwind_nc.variables['lat'][:], 0)
+            uwind_lons = np.flip(uwind_nc.variables['lat'][:], 0)
+            if use_interpolation == 1:
+                [x_dense, y_dense] = np.meshgrid(np.arange(slp_lons[0], slp_lons[-1] + interp_resolution, interp_resolution),
+                                                 np.arange(slp_lats[0], slp_lats[-1] + interp_resolution, interp_resolution))
+                uwind_map = basemap.interp(np.squeeze(uwind_data[current_day,:,:]),
+                                            uwind_lons,
+                                            uwind_lats,
+                                            x_dense,
+                                            y_dense,
+                                            order=interpolation_method)
+                vwind_map = basemap.interp(np.squeeze(vwind_data[current_day,:,:]),
+                                            uwind_lons,
+                                            uwind_lats,
+                                            x_dense,
+                                            y_dense,
+                                            order=interpolation_method)
+            else:
+                uwind_map = np.squeeze(uwind_data[current_day, :, :])
+                vwind_map = np.squeeze(vwind_data[current_day, :, :])
 
-            vorticity_map = np.zeros(uwind_map.shape[0], uwind_map.shape[1])
-            for current_lat in range(1, uwind_map.shape[0]):
-                for current_lon in range(1, uwind_map.shape[1]):
+            vorticity_map = np.zeros((uwind_map.shape[0], uwind_map.shape[1]))
+            for current_lat in range(1, uwind_map.shape[0]-1):
+                for current_lon in range(1, uwind_map.shape[1]-1):
                     duwind = uwind_map[current_lat + 1, current_lon] - uwind_map[current_lat - 1, current_lon]
                     dvwind = vwind_map[current_lat, current_lon + 1] - vwind_map[current_lat, current_lon - 1]
                     dy = 2 * data_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
@@ -224,8 +244,8 @@ def main():
                 print('RST square conditions are not met')
             print('=====================================')
 
-        if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0) and any(trough_coordinates):
-            is_rst_vector[current_day] = 1
+            if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0) and any(trough_coordinates):
+                is_rst_vector[current_day] = 1
 
         if display_maps == 1:
             # Display the troughs and ridges maps
@@ -237,24 +257,35 @@ def main():
                 size_x = 20
                 size_y = size_x/aspect_ratio
             fig = plt.figure(num=None, figsize=(size_x, size_y ), dpi=80, facecolor='w', edgecolor='k')
-            map = Basemap(llcrnrlon=lon1, llcrnrlat=lat1, urcrnrlon=lon2, urcrnrlat=lat2, projection='merc', resolution='i')
+            map = Basemap(llcrnrlon=map_lon1, llcrnrlat=map_lat1, urcrnrlon=map_lon2, urcrnrlat=map_lat2, projection='merc', resolution='i')
             map.drawcoastlines()
             #map.fillcontinents(color='coral', lake_color='aqua')
             # draw parallels and meridians.
-            map.drawparallels(np.arange(lat1, lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
-            map.drawmeridians(np.arange(lon1, lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
+            map.drawparallels(np.arange(map_lat1, map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
+            map.drawmeridians(np.arange(map_lon1, map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
             #map.drawmapboundary(fill_color='aqua')
             plt.title("Red Sea Troughs")
 
             if show_vorticity == 1:
-                map.pcolor(slp_lons, slp_lats, vorticity_map)
+                lon1_index = int(np.where(slp_lons == map_lon1)[0])
+                lon2_index = int(np.where(slp_lons == map_lon2)[0])
+                lat1_index = int(np.where(slp_lats == map_lat1)[0])
+                lat2_index = int(np.where(slp_lats == map_lat2)[0])
+                subset_vorticity_map = vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
+                mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
+                x, y = map(mesh_lons, mesh_lats)
+                #clevs = np.arange(subset_geostrophic_vorticity_map.min(), subset_geostrophic_vorticity_map.max(), (subset_geostrophic_vorticity_map.max() - subset_geostrophic_vorticity_map.min()) / 11)
+                #map.pcolormesh(x, y, subset_geostrophic_vorticity_map)
+                map.contour(x, y, slp_data[current_day, lat1_index:lat2_index+1, lon1_index:lon2_index+1], 15, linewidths=1.5, colors='k')
+                map.contour(x, y, subset_vorticity_map, 10, linewidths=0.5, colors='k')
+                map.contourf(x, y, subset_vorticity_map, 10)
                 map.colorbar()
 
             if show_geostrophic_vorticity == 1:
-                lon1_index = int(np.where(slp_lons == lon1)[0])
-                lon2_index = int(np.where(slp_lons == lon2)[0])
-                lat1_index = int(np.where(slp_lats == lat1)[0])
-                lat2_index = int(np.where(slp_lats == lat2)[0])
+                lon1_index = int(np.where(slp_lons == map_lon1)[0])
+                lon2_index = int(np.where(slp_lons == map_lon2)[0])
+                lat1_index = int(np.where(slp_lats == map_lat1)[0])
+                lat2_index = int(np.where(slp_lats == map_lat2)[0])
                 subset_geostrophic_vorticity_map = geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
                 mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
                 x, y = map(mesh_lons, mesh_lats)
@@ -272,19 +303,19 @@ def main():
                         for current_lon in range(10, total_lon - 11):
                             x_dot, y_dot = map(slp_lons[current_lon],  slp_lats[current_lat])
                             if troughs_map[current_lat, current_lon] == 1:
-                                map.plot(x_dot, y_dot, 'D-', markersize=10, dotwidth=2, color='k', markerfacecolor='b')
+                                map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='b')
                             if ridges_map[current_lat, current_lon] == 1:
-                                map.plot(x_dot, y_dot, 'D-', markersize=10, dotwidth=2, color='k', markerfacecolor='r')
+                                map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
                 else:
                     for current_lat in range(2, total_lat - 3):
                         for current_lon in range(2, total_lon - 3):
                             x_dot, y_dot = map(slp_lons[current_lon],  slp_lats[current_lat])
                             if troughs_map[current_lat, current_lon] == 1:
-                                map.plot(x_dot, y_dot, 'D-', markersize=10, dotwidth=2, color='k', markerfacecolor='b')
+                                map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='b')
                             if ridges_map[current_lat, current_lon] == 1:
-                                map.plot(x_dot, y_dot, 'D-', markersize=10, dotwidth=2, color='k', markerfacecolor='r')
+                                map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
             # Add the date
-            x_dot, y_dot = map(lon1+1, lat2-1)
+            x_dot, y_dot = map(map_lon1+1, map_lat2-1)
             current_date = num2date(slp_time[0], slp_time.units)
             plt.text(x_dot, y_dot, current_date, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
@@ -320,18 +351,19 @@ def main():
                     map.plot(x_mark, y_mark, 'D-', markersize=10, color='blue')
 
                 # Add the points value
-                if use_interpolation == 0:
-                    data_string = "1st point: " + str(geostrophic_vorticity_map[4, 6])\
-                                  +"  2nd point: " + str(geostrophic_vorticity_map[3, 6])
-                    x_dot, y_dot = map(lon1 + 1, lat2 - 2)
-                    plt.text(x_dot, y_dot, data_string, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                if show_geostrophic_vorticity:
+                    if use_interpolation == 0:
+                        data_string = "1st point: " + str(geostrophic_vorticity_map[4, 6])\
+                                      +"  2nd point: " + str(geostrophic_vorticity_map[3, 6])
+                        x_dot, y_dot = map(map_lon1 + 1, map_lat2 - 2)
+                        plt.text(x_dot, y_dot, data_string, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
-                # Add a note for met rst conditions
-                x_dot, y_dot = map(lon1 + 1, lat2 - 3)
-                if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0):
-                    plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
-                else:
-                    plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                    # Add a note for met rst conditions
+                    x_dot, y_dot = map(map_lon1 + 1, map_lat2 - 3)
+                    if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0):
+                        plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                    else:
+                        plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
             if save_maps == 1:
                 directory = ("C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/output/")
