@@ -11,52 +11,51 @@ from python.utils.read_nc_files import read_nc_files
 
 
 def main():
-    use_interpolation = 1
+    use_interpolation = 0
     show_vorticity = 0
     show_geostrophic_vorticity = 1
-    show_dots = 0
+    show_dots = 1
     show_rst_info = 1
     # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
     interpolation_method = 3
     save_maps = 0
     display_maps = 1
 
-
+    # Read the data files
     slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
-    slp_data, slp_lats, slp_lons, slp_time, file_string_time = read_nc_files(slp_filename, 'slp', start_time=2, delta_time=4)
-    total_days = slp_data.shape[0]
-    data_resolution = slp_lats[1] - slp_lats[0]
-
-    if show_vorticity == 1:
+    slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, 'slp', start_time=2, delta_time=4)
+    if show_vorticity:
         uwind_filename = consts.raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
-        uwind_data, uwind_lats, uwind_lons = read_nc_files(uwind_filename, 'uwnd', start_time=2, delta_time=4)[0:3]
+        uwind_data = read_nc_files(uwind_filename, 'uwnd', start_time=2, delta_time=4)[0]
         vwind_filename = consts.raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
         vwind_data = read_nc_files(vwind_filename, 'vwnd', start_time=2, delta_time=4)[0]
 
-    # Interpolation of the data
-    total_lat = slp_lats.shape[0]
-    total_lon = slp_lons.shape[0]
+    total_days = slp_data.shape[0]
+    data_resolution = orig_data_lats[1] - orig_data_lats[0]
 
-    interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
-    if use_interpolation == 1:
-        [x_dense, y_dense] = np.meshgrid(np.arange(slp_lons[0], slp_lons[-1]+interp_resolution, interp_resolution),
-                                         np.arange(slp_lats[0], slp_lats[-1]+interp_resolution, interp_resolution))
+    total_lat = orig_data_lats.shape[0]
+    total_lon = orig_data_lons.shape[0]
+
+    # Interpolation of the data
+    if use_interpolation:
+        [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1]+consts.interp_resolution, consts.interp_resolution),
+                                         np.arange(orig_data_lats[0], orig_data_lats[-1]+consts.interp_resolution, consts.interp_resolution))
         temp_slp_data = np.zeros((total_days, x_dense.shape[0], y_dense.shape[0]))
 
         for current_day in range(total_days):
             temp_slp_data[current_day, :, :] = basemap.interp(np.squeeze(slp_data[current_day,:,:]),
-                                                              slp_lons,
-                                                              slp_lats,
+                                                              orig_data_lons,
+                                                              orig_data_lats,
                                                               x_dense,
                                                               y_dense,
                                                               order=interpolation_method)
 
         slp_data = temp_slp_data
-        # Update total_lat and total and slp_lats, slp_lons
+        # Create the interpolated version of lons and lats
         total_lat = slp_data.shape[1]
         total_lon = slp_data.shape[2]
-        slp_lats = np.arange(slp_lats[0], slp_lats[-1]+interp_resolution, interp_resolution)
-        slp_lons = np.arange(slp_lons[0], slp_lons[-1]+interp_resolution, interp_resolution)
+        interp_data_lats = np.arange(orig_data_lats[0], orig_data_lats[-1]+consts.interp_resolution, consts.interp_resolution)
+        interp_data_lons = np.arange(orig_data_lons[0], orig_data_lons[-1]+consts.interp_resolution, consts.interp_resolution)
 
     map_counter = 0
     is_rst_vector = np.zeros(total_days)
@@ -100,20 +99,19 @@ def main():
                             ridges_map[current_lat, current_lon] = 1
 
         # Calculate Vorticity
-        if show_vorticity == 1:
-            interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
-            if use_interpolation == 1:
-                [x_dense, y_dense] = np.meshgrid(np.arange(slp_lons[0], slp_lons[-1] + interp_resolution, interp_resolution),
-                                                 np.arange(slp_lats[0], slp_lats[-1] + interp_resolution, interp_resolution))
+        if show_vorticity:
+            if use_interpolation:
+                [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1] + consts.interp_resolution, consts.interp_resolution),
+                                                 np.arange(orig_data_lats[0], orig_data_lats[-1] + consts.interp_resolution, consts.interp_resolution))
                 uwind_map = basemap.interp(np.squeeze(uwind_data[current_day,:,:]),
-                                            uwind_lons,
-                                            uwind_lats,
+                                            orig_data_lons,
+                                            orig_data_lats,
                                             x_dense,
                                             y_dense,
                                             order=interpolation_method)
                 vwind_map = basemap.interp(np.squeeze(vwind_data[current_day,:,:]),
-                                            uwind_lons,
-                                            uwind_lats,
+                                            orig_data_lons,
+                                            orig_data_lats,
                                             x_dense,
                                             y_dense,
                                             order=interpolation_method)
@@ -126,8 +124,12 @@ def main():
                 for current_lon in range(1, uwind_map.shape[1]-1):
                     duwind = uwind_map[current_lat + 1, current_lon] - uwind_map[current_lat - 1, current_lon]
                     dvwind = vwind_map[current_lat, current_lon + 1] - vwind_map[current_lat, current_lon - 1]
-                    dy = 2 * data_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
-                    dx = 2 * data_resolution * 111000 * math.cos(math.radians(slp_lats[current_lat]))
+                    if use_interpolation:
+                        dy = 2 * consts.interp_resolution * 111000  # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
+                        dx = 2 * consts.interp_resolution * 111000 * math.cos(math.radians(interp_data_lats[current_lat]))
+                    else:
+                        dy = 2 * data_resolution * 111000  # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
+                        dx = 2 * data_resolution * 111000 * math.cos(math.radians(orig_data_lats[current_lat]))
                     vorticity_map[current_lat, current_lon] = (dvwind / dx) - (duwind / dy)
 
         # Calculate Geostrophic vorticity
@@ -142,11 +144,11 @@ def main():
                     dpx = slp_data[current_day, current_lat, current_lon + 1] - slp_data[current_day,current_lat, current_lon - 1]
                     dpy = slp_data[current_day, current_lat + 1, current_lon] - slp_data[current_day, current_lat - 1, current_lon]
                     if use_interpolation == 1:
-                        dy = 2 * interp_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
-                        dx = 2 * interp_resolution * 111000 * math.cos(math.radians(slp_lats[current_lat]))
+                        dy = 2 * consts.interp_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
+                        dx = 2 * consts.interp_resolution * 111000 * math.cos(math.radians(interp_data_lats[current_lat]))
                     else:
                         dy = 2 * data_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
-                        dx = 2 * data_resolution * 111000 * math.cos(math.radians(slp_lats[current_lat]))
+                        dx = 2 * data_resolution * 111000 * math.cos(math.radians(orig_data_lats[current_lat]))
                     ugwind_map[current_lat, current_lon] = (((-1) / rho) * (dpy / dy)) / (2 * omega * math.sin(math.radians(current_lat)))
                     vgwind_map[current_lat, current_lon] = (((1) / rho) * (dpx / dx)) / (2 * omega * math.sin(math.radians(current_lat)))
 
@@ -159,18 +161,17 @@ def main():
         # Find Red Sea Trough
         func_interp_resolution = 0.5  # This is the interpolated resolution(degrees) for the find trough function.
         if use_interpolation == 0: # Not already inerpolated at the beginning. Needs the interpolation for the find_trough function
-            total_lat = slp_lats.shape[0]
-            total_lon = slp_lons.shape[0]
+            total_lat = orig_data_lats.shape[0]
+            total_lon = orig_data_lons.shape[0]
 
-            interp_ratio = func_interp_resolution / data_resolution
-            [x_dense, y_dense] = np.meshgrid(np.arange(slp_lons[0], slp_lons[-1] + interp_resolution, interp_resolution),
-                                             np.arange(slp_lats[0], slp_lats[-1] + interp_resolution, interp_resolution))
-            temp_slp_data = basemap.interp(np.squeeze(slp_data[current_day, :, :]), slp_lons, slp_lats, x_dense,
+            [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1] + func_interp_resolution, func_interp_resolution),
+                                             np.arange(orig_data_lats[0], orig_data_lats[-1] + func_interp_resolution, func_interp_resolution))
+            temp_slp_data = basemap.interp(np.squeeze(slp_data[current_day, :, :]), orig_data_lons, orig_data_lats, x_dense,
                                                                   y_dense, order=interpolation_method)
         else:
             temp_slp_data = np.squeeze(slp_data[current_day, :, :])
-        lowest_lat = slp_lats[0]
-        lowest_lon = slp_lons[0]
+        lowest_lat = orig_data_lats[0]
+        lowest_lon = orig_data_lons[0]
         multiplier = 1 / func_interp_resolution
         indexed_rst_lat1 = int((consts.rst_lat1 - lowest_lat) * multiplier)
         indexed_rst_lat2 = int((consts.rst_lat2 - lowest_lat) * multiplier)
@@ -197,7 +198,7 @@ def main():
         # Calculate the mean Geostrophic Vorticity in the 3rd RST square
         if show_geostrophic_vorticity == 1:
             if use_interpolation == 1:
-                vort_multiplier = 1 / interp_resolution
+                vort_multiplier = 1 / consts.interp_resolution
             else:
                 vort_multiplier = 1 / data_resolution
             indexed_rst_square3_lat1 = math.ceil((consts.rst_square3_lat1 - lowest_lat) * vort_multiplier)
@@ -238,12 +239,20 @@ def main():
             plt.title("Red Sea Troughs")
 
             if show_vorticity == 1:
-                lon1_index = int(np.where(slp_lons == consts.map_lon1)[0])
-                lon2_index = int(np.where(slp_lons == consts.map_lon2)[0])
-                lat1_index = int(np.where(slp_lats == consts.map_lat1)[0])
-                lat2_index = int(np.where(slp_lats == consts.map_lat2)[0])
+                if use_interpolation:
+                    lon1_index = int(np.where(interp_data_lons == consts.map_lon1)[0])
+                    lon2_index = int(np.where(interp_data_lons == consts.map_lon2)[0])
+                    lat1_index = int(np.where(interp_data_lats == consts.map_lat1)[0])
+                    lat2_index = int(np.where(interp_data_lats == consts.map_lat2)[0])
+                    mesh_lons, mesh_lats = np.meshgrid(interp_data_lons[lon1_index:lon2_index + 1], interp_data_lats[lat1_index:lat2_index + 1])
+                else:
+                    lon1_index = int(np.where(orig_data_lons == consts.map_lon1)[0])
+                    lon2_index = int(np.where(orig_data_lons == consts.map_lon2)[0])
+                    lat1_index = int(np.where(orig_data_lats == consts.map_lat1)[0])
+                    lat2_index = int(np.where(orig_data_lats == consts.map_lat2)[0])
+                    mesh_lons, mesh_lats = np.meshgrid(orig_data_lons[lon1_index:lon2_index+1], orig_data_lats[lat1_index:lat2_index+1])
+
                 subset_vorticity_map = vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
-                mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
                 x, y = map(mesh_lons, mesh_lats)
                 #clevs = np.arange(subset_geostrophic_vorticity_map.min(), subset_geostrophic_vorticity_map.max(), (subset_geostrophic_vorticity_map.max() - subset_geostrophic_vorticity_map.min()) / 11)
                 #map.pcolormesh(x, y, subset_geostrophic_vorticity_map)
@@ -253,12 +262,19 @@ def main():
                 map.colorbar()
 
             if show_geostrophic_vorticity == 1:
-                lon1_index = int(np.where(slp_lons == consts.map_lon1)[0])
-                lon2_index = int(np.where(slp_lons == consts.map_lon2)[0])
-                lat1_index = int(np.where(slp_lats == consts.map_lat1)[0])
-                lat2_index = int(np.where(slp_lats == consts.map_lat2)[0])
+                if use_interpolation:
+                    lon1_index = int(np.where(interp_data_lons == consts.map_lon1)[0])
+                    lon2_index = int(np.where(interp_data_lons == consts.map_lon2)[0])
+                    lat1_index = int(np.where(interp_data_lats == consts.map_lat1)[0])
+                    lat2_index = int(np.where(interp_data_lats == consts.map_lat2)[0])
+                    mesh_lons, mesh_lats = np.meshgrid(interp_data_lons[lon1_index:lon2_index + 1], interp_data_lats[lat1_index:lat2_index + 1])
+                else:
+                    lon1_index = int(np.where(orig_data_lons == consts.map_lon1)[0])
+                    lon2_index = int(np.where(orig_data_lons == consts.map_lon2)[0])
+                    lat1_index = int(np.where(orig_data_lats == consts.map_lat1)[0])
+                    lat2_index = int(np.where(orig_data_lats == consts.map_lat2)[0])
+                    mesh_lons, mesh_lats = np.meshgrid(orig_data_lons[lon1_index:lon2_index + 1], orig_data_lats[lat1_index:lat2_index + 1])
                 subset_geostrophic_vorticity_map = geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
-                mesh_lons, mesh_lats = np.meshgrid(slp_lons[lon1_index:lon2_index+1], slp_lats[lat1_index:lat2_index+1])
                 x, y = map(mesh_lons, mesh_lats)
                 #clevs = np.arange(subset_geostrophic_vorticity_map.min(), subset_geostrophic_vorticity_map.max(), (subset_geostrophic_vorticity_map.max() - subset_geostrophic_vorticity_map.min()) / 11)
                 #map.pcolormesh(x, y, subset_geostrophic_vorticity_map)
@@ -272,7 +288,7 @@ def main():
                 if use_interpolation == 1:
                     for current_lat in range(10,total_lat - 11):
                         for current_lon in range(10, total_lon - 11):
-                            x_dot, y_dot = map(slp_lons[current_lon],  slp_lats[current_lat])
+                            x_dot, y_dot = map(interp_data_lons[current_lon],  interp_data_lats[current_lat])
                             if troughs_map[current_lat, current_lon] == 1:
                                 map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='b')
                             if ridges_map[current_lat, current_lon] == 1:
@@ -280,14 +296,14 @@ def main():
                 else:
                     for current_lat in range(2, total_lat - 3):
                         for current_lon in range(2, total_lon - 3):
-                            x_dot, y_dot = map(slp_lons[current_lon],  slp_lats[current_lat])
+                            x_dot, y_dot = map(orig_data_lons[current_lon],  orig_data_lats[current_lat])
                             if troughs_map[current_lat, current_lon] == 1:
                                 map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='b')
                             if ridges_map[current_lat, current_lon] == 1:
                                 map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
             # Add the date
             x_dot, y_dot = map(consts.map_lon1+1, consts.map_lat2-1)
-            current_date = file_string_time[current_day]
+            current_date = data_string_time[current_day]
             plt.text(x_dot, y_dot, current_date, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
             # Draw the RST, if such exists.
@@ -295,8 +311,8 @@ def main():
                 trough_length = trough_coordinates.shape[0]
                 trough_deg_coordinates = np.zeros((trough_length, 2))
                 for loop in range(trough_length):
-                    trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop - 1) * interp_resolution)
-                    trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((trough_coordinates[loop]) * interp_resolution)
+                    trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop - 1) * func_interp_resolution)
+                    trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((trough_coordinates[loop]) * func_interp_resolution)
 
                 x_trough, y_trough = map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
                 map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')

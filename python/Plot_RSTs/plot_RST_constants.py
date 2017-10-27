@@ -3,6 +3,9 @@
 # The location of the data files
 raw_data_prefix = "C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/Raw_data/"
 
+# The interpolation resolution of the maps' data (not for the find_torugh method)
+interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
+
 # The coordiantes for the plotted area
 map_lat1 = 25
 map_lat2 = 45
