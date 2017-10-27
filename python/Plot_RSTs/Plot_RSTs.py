@@ -1,13 +1,13 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from netCDF4 import Dataset, num2date
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits import basemap
 
 # My imports
 from python.Plot_RSTs.find_trough import find_trough
 import python.Plot_RSTs.plot_RST_constants as consts
+from python.utils.read_nc_files import read_nc_files
 
 
 def main():
@@ -16,28 +16,22 @@ def main():
     show_geostrophic_vorticity = 1
     show_dots = 0
     show_rst_info = 1
-    # For the interpolation - order	0 for nearest-neighbor interpolation, 1 for bilinear interpolation, 3 for cublic spline (default 1). order=3 requires scipy.ndimage.
+    # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
     interpolation_method = 3
     save_maps = 0
     display_maps = 1
 
 
     slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
-    slp_nc = Dataset(slp_filename)
-    slp_data = np.flip(np.squeeze(slp_nc.variables['slp'][2:-1:4, :, :]), 1) # Take only the 12Z data
-    slp_lats = np.flip(slp_nc.variables['lat'][:], 0)  # flipping because nc files come with descending lats
-    slp_lons = slp_nc.variables['lon'][:]
-    slp_time = slp_nc.variables['time']
+    slp_data, slp_lats, slp_lons, slp_time, file_string_time = read_nc_files(slp_filename, 'slp', start_time=2, delta_time=4)
     total_days = slp_data.shape[0]
     data_resolution = slp_lats[1] - slp_lats[0]
 
     if show_vorticity == 1:
         uwind_filename = consts.raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
-        uwind_nc = Dataset(uwind_filename)
-        uwind_data = np.flip(np.squeeze(uwind_nc.variables['uwnd'][2:-1:4, :, :]), 1) # Take only the 12Z data
+        uwind_data, uwind_lats, uwind_lons = read_nc_files(uwind_filename, 'uwnd', start_time=2, delta_time=4)[0:3]
         vwind_filename = consts.raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
-        vwind_nc = Dataset(vwind_filename)
-        vwind_data = np.flip(np.squeeze(vwind_nc.variables['vwnd'][2:-1:4, :, :]), 1) # Take only the 12Z data
+        vwind_data = read_nc_files(vwind_filename, 'vwnd', start_time=2, delta_time=4)[0]
 
     # Interpolation of the data
     total_lat = slp_lats.shape[0]
@@ -108,8 +102,6 @@ def main():
         # Calculate Vorticity
         if show_vorticity == 1:
             interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
-            uwind_lats = np.flip(uwind_nc.variables['lat'][:], 0)
-            uwind_lons = np.flip(uwind_nc.variables['lat'][:], 0)
             if use_interpolation == 1:
                 [x_dense, y_dense] = np.meshgrid(np.arange(slp_lons[0], slp_lons[-1] + interp_resolution, interp_resolution),
                                                  np.arange(slp_lats[0], slp_lats[-1] + interp_resolution, interp_resolution))
@@ -295,7 +287,7 @@ def main():
                                 map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
             # Add the date
             x_dot, y_dot = map(consts.map_lon1+1, consts.map_lat2-1)
-            current_date = num2date(slp_time[0], slp_time.units)
+            current_date = file_string_time[current_day]
             plt.text(x_dot, y_dot, current_date, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
             # Draw the RST, if such exists.
