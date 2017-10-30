@@ -12,13 +12,13 @@ from python.utils.my_interp import my_interp
 
 
 def main():
-    use_interpolation = 1
-    show_vorticity = 0
-    show_geostrophic_vorticity = 1
-    show_dots = 1
-    show_rst_info = 1
-    save_maps = 0
-    display_maps = 1
+    use_interpolation = True
+    show_vorticity = False
+    show_geostrophic_vorticity = True
+    show_dots = True
+    show_rst_info = True
+    save_maps = False
+    display_maps = True
 
     # Read the data files
     slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
@@ -52,9 +52,27 @@ def main():
                                                          consts.interp_resolution,
                                                          consts.interpolation_method)[0]
         slp_data = temp_slp_data
-        # Create the interpolated version of lons and lats
+        # Change the values of total lat and lon to the interpolated value of later
         total_lat = slp_data.shape[1]
         total_lon = slp_data.shape[2]
+
+        if show_vorticity:
+            vort_total_days = uwind_data.shape[0]
+            temp_uwind_data = np.zeros((vort_total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
+            temp_vwind_data = np.zeros((vort_total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
+            for current_day in range(vort_total_days):
+                temp_uwind_data[current_day, :, :] = my_interp(uwind_data[current_day, :, :],
+                                                 orig_data_lats,
+                                                 orig_data_lons,
+                                                 consts.interp_resolution,
+                                                 consts.interpolation_method)[0]
+                temp_vwind_data[current_day, :, :] = my_interp(vwind_data[current_day, :, :],
+                                                       orig_data_lats,
+                                                       orig_data_lons,
+                                                       consts.interp_resolution,
+                                                       consts.interpolation_method)[0]
+            uwind_data = temp_uwind_data
+            vwind_data = temp_vwind_data
 
     map_counter = 0
     is_rst_vector = np.zeros(total_days)
@@ -99,24 +117,8 @@ def main():
 
         # Calculate Vorticity
         if show_vorticity:
-            if use_interpolation:
-                [x_dense, y_dense] = np.meshgrid(np.arange(orig_data_lons[0], orig_data_lons[-1] + consts.interp_resolution, consts.interp_resolution),
-                                                 np.arange(orig_data_lats[0], orig_data_lats[-1] + consts.interp_resolution, consts.interp_resolution))
-                uwind_map = basemap.interp(np.squeeze(uwind_data[current_day,:,:]),
-                                            orig_data_lons,
-                                            orig_data_lats,
-                                            x_dense,
-                                            y_dense,
-                                            order=consts.interpolation_method)
-                vwind_map = basemap.interp(np.squeeze(vwind_data[current_day,:,:]),
-                                            orig_data_lons,
-                                            orig_data_lats,
-                                            x_dense,
-                                            y_dense,
-                                            order=consts.interpolation_method)
-            else:
-                uwind_map = np.squeeze(uwind_data[current_day, :, :])
-                vwind_map = np.squeeze(vwind_data[current_day, :, :])
+            uwind_map = np.squeeze(uwind_data[current_day, :, :])
+            vwind_map = np.squeeze(vwind_data[current_day, :, :])
 
             vorticity_map = np.zeros((uwind_map.shape[0], uwind_map.shape[1]))
             for current_lat in range(1, uwind_map.shape[0]-1):
@@ -132,7 +134,7 @@ def main():
                     vorticity_map[current_lat, current_lon] = (dvwind / dx) - (duwind / dy)
 
         # Calculate Geostrophic vorticity
-        if show_geostrophic_vorticity == 1:
+        if show_geostrophic_vorticity:
             ugwind_map = np.zeros((total_lat, total_lon))
             vgwind_map = np.zeros((total_lat, total_lon))
             geostrophic_vorticity_map = np.zeros((total_lat, total_lon))
@@ -142,7 +144,7 @@ def main():
                 for current_lon in range(1, total_lon - 1):
                     dpx = slp_data[current_day, current_lat, current_lon + 1] - slp_data[current_day,current_lat, current_lon - 1]
                     dpy = slp_data[current_day, current_lat + 1, current_lon] - slp_data[current_day, current_lat - 1, current_lon]
-                    if use_interpolation == 1:
+                    if use_interpolation:
                         dy = 2 * consts.interp_resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
                         dx = 2 * consts.interp_resolution * 111000 * math.cos(math.radians(interp_data_lats[current_lat]))
                     else:
@@ -159,7 +161,7 @@ def main():
 
         # Find Red Sea Trough
         func_interp_resolution = 0.5  # This is the interpolated resolution(degrees) for the find trough function.
-        if use_interpolation == 0: # Not already inerpolated at the beginning. Needs the interpolation for the find_trough function
+        if not use_interpolation: # Not already inerpolated at the beginning. Needs the interpolation for the find_trough function
             total_lat = orig_data_lats.shape[0]
             total_lon = orig_data_lons.shape[0]
 
@@ -195,8 +197,8 @@ def main():
         print("mean SLP at square 2: %f", mean_slp_square2)
 
         # Calculate the mean Geostrophic Vorticity in the 3rd RST square
-        if show_geostrophic_vorticity == 1:
-            if use_interpolation == 1:
+        if show_geostrophic_vorticity:
+            if use_interpolation:
                 vort_multiplier = 1 / consts.interp_resolution
             else:
                 vort_multiplier = 1 / data_resolution
@@ -208,7 +210,7 @@ def main():
             print("mean Geostrophic Vorticity at square 3: %f", mean_geos_vort_square3)
 
         # Check for the RST square condition
-        if show_geostrophic_vorticity == 1:
+        if show_geostrophic_vorticity:
             if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0):
                 print('RST square conditions met')
             else:
@@ -218,7 +220,7 @@ def main():
             if (mean_slp_square1 < mean_slp_square2) and (mean_geos_vort_square3 > 0) and any(trough_coordinates):
                 is_rst_vector[current_day] = 1
 
-        if display_maps == 1:
+        if display_maps:
             # Display the troughs and ridges maps
             aspect_ratio = total_lon/total_lat
             if aspect_ratio <= (16/9):
@@ -237,7 +239,7 @@ def main():
             #map.drawmapboundary(fill_color='aqua')
             plt.title("Red Sea Troughs")
 
-            if show_vorticity == 1:
+            if show_vorticity:
                 if use_interpolation:
                     lon1_index = int(np.where(interp_data_lons == consts.map_lon1)[0])
                     lon2_index = int(np.where(interp_data_lons == consts.map_lon2)[0])
@@ -260,7 +262,7 @@ def main():
                 map.contourf(x, y, subset_vorticity_map, 10)
                 map.colorbar()
 
-            if show_geostrophic_vorticity == 1:
+            if show_geostrophic_vorticity:
                 if use_interpolation:
                     lon1_index = int(np.where(interp_data_lons == consts.map_lon1)[0])
                     lon2_index = int(np.where(interp_data_lons == consts.map_lon2)[0])
@@ -283,8 +285,8 @@ def main():
                 map.colorbar()
 
             # Draw the troughs and ridges dots
-            if show_dots == 1:
-                if use_interpolation == 1:
+            if show_dots:
+                if use_interpolation:
                     for current_lat in range(10,total_lat - 11):
                         for current_lon in range(10, total_lon - 11):
                             x_dot, y_dot = map(interp_data_lons[current_lon],  interp_data_lats[current_lat])
@@ -317,7 +319,7 @@ def main():
                 map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
                 map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
 
-            if show_rst_info == 1: # Draw box3 and the 2 points
+            if show_rst_info: # Draw box3 and the 2 points
                 lat_array_region = [consts.rst_square3_lat1,
                                     consts.rst_square3_lat1,
                                     consts.rst_square3_lat2,
@@ -330,7 +332,7 @@ def main():
                                     consts.rst_square3_lon1]
                 x_region, y_region = map(lon_array_region, lat_array_region)
                 map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
-                if use_interpolation == 0:
+                if use_interpolation:
                     x_mark, y_mark = map(35,30)
                     map.plot(x_mark, y_mark, 'D-', markersize=10, color='blue')
                     x_mark, y_mark = map(35,32.5)
@@ -338,7 +340,7 @@ def main():
 
                 # Add the points value
                 if show_geostrophic_vorticity:
-                    if use_interpolation == 0:
+                    if use_interpolation:
                         data_string = "1st point: " + str(geostrophic_vorticity_map[4, 6])\
                                       +"  2nd point: " + str(geostrophic_vorticity_map[3, 6])
                         x_dot, y_dot = map(consts.map_lon1 + 1, consts.map_lat2 - 2)
@@ -351,7 +353,7 @@ def main():
                     else:
                         plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
 
-            if save_maps == 1:
+            if save_maps:
                 directory = ("C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/output/")
                 map_name_str = "Try_" + str(map_counter)
                 filename = directory + map_name_str + ".png"
