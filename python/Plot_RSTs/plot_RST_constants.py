@@ -6,6 +6,9 @@ raw_data_prefix = "C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synop
 # The interpolation resolution of the maps' data (not for the find_torugh method)
 interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
 
+# The interpolation resolution for finding the RST coordinates
+rst_resolution = 0.5
+
 # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
 interpolation_method = 3
 
