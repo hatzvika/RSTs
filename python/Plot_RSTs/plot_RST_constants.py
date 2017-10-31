@@ -40,3 +40,6 @@ rst_square3_lat2 = 33
 rst_square3_lon1 = 34
 rst_square3_lon2 = 36
 
+map_text_fontsize = 12
+
+

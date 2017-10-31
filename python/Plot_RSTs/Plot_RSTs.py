@@ -47,14 +47,13 @@ class PlotRSTs ():
         self.mean_slp_square2 = None
         self.mean_geos_vort_square3 = None
 
-
     # Read the data files
     def _read_files(self):
         slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_20-50N_20-50E_full_1985.nc"
         slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, 'slp', start_time=2, delta_time=4)
-        uwind_filename = consts.raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
+        uwind_filename = consts.raw_data_prefix + "/uwind/uwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_1985_full.nc"
         uwind_data = read_nc_files(uwind_filename, 'uwnd', start_time=2, delta_time=4)[0]
-        vwind_filename = consts.raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_May_1985.nc"
+        vwind_filename = consts.raw_data_prefix + "/vwind/vwind_850hPa_NCEP_22.5-47.5N_22.5-47.5E_1985_full.nc"
         vwind_data = read_nc_files(vwind_filename, 'vwnd', start_time=2, delta_time=4)[0]
 
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
@@ -98,23 +97,30 @@ class PlotRSTs ():
         return interp_slp_data, interp_uwind_data, interp_vwind_data, interp_data_lats, interp_data_lons
 
     def calculate_maps_data(self, current_day, use_interpolation, show_vorticity, show_geostrophic_vorticity, show_dots):
-        self.current_day = current_day
+        # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
+        if type(current_day) is int:
+            self.current_day = current_day
+        else:
+            for loop_day in range(self.data_string_time.shape[0]):
+                if str(self.data_string_time[loop_day]) == current_day:
+                    self.current_day = loop_day
+                    break
 
         # Prepare the right data depending on interpolation
         if use_interpolation:
             self.is_interpolated = True
-            slp_data = self.interp_slp_data[current_day, :, :].squeeze()
-            uwind_data = self.interp_uwind_data[current_day, :, :].squeeze()
-            vwind_data = self.interp_vwind_data[current_day, :, :].squeeze()
+            slp_data = self.interp_slp_data[self.current_day, :, :].squeeze()
+            uwind_data = self.interp_uwind_data[self.current_day, :, :].squeeze()
+            vwind_data = self.interp_vwind_data[self.current_day, :, :].squeeze()
             total_lat = self.interp_data_lats.shape[0]
             total_lon = self.interp_data_lons.shape[0]
             lats = self.interp_data_lats
             lons = self.interp_data_lons
         else:
             self.is_interpolated = False
-            slp_data = self.orig_slp_data[current_day, :, :].squeeze()
-            uwind_data = self.orig_uwind_data[current_day, :, :].squeeze()
-            vwind_data = self.orig_vwind_data[current_day, :, :].squeeze()
+            slp_data = self.orig_slp_data[self.current_day, :, :].squeeze()
+            uwind_data = self.orig_uwind_data[self.current_day, :, :].squeeze()
+            vwind_data = self.orig_vwind_data[self.current_day, :, :].squeeze()
             total_lat = self.orig_data_lats.shape[0]
             total_lon = self.orig_data_lons.shape[0]
             lats = self.orig_data_lats
@@ -293,7 +299,7 @@ class PlotRSTs ():
         return is_rst_condition_met
 
     # This function will create the map according to the flags sent in the previous calculate_maps_data method call
-    def create_map(self, show_rst_info):
+    def create_map(self, map_axis, show_rst_info):
         if self.is_interpolated is None:
             print("Use the calculate_maps_data method before calling create_map")
             return
@@ -313,15 +319,16 @@ class PlotRSTs ():
             lons = self.orig_data_lons
 
         # Create the map object
-        map = Basemap(llcrnrlon=consts.map_lon1,
+        rst_map = Basemap(llcrnrlon=consts.map_lon1,
                       llcrnrlat=consts.map_lat1,
                       urcrnrlon=consts.map_lon2,
                       urcrnrlat=consts.map_lat2,
                       projection='merc',
-                      resolution='i')
-        map.drawcoastlines()
-        map.drawparallels(np.arange(consts.map_lat1, consts.map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
-        map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
+                      resolution='i',
+                      ax=map_axis)
+        rst_map.drawcoastlines()
+        rst_map.drawparallels(np.arange(consts.map_lat1, consts.map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
+        rst_map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
         plt.title("Red Sea Troughs")
 
         # Calculate the meshes for the maps and plot SLP contours (always)
@@ -331,37 +338,33 @@ class PlotRSTs ():
         lat2_index = int(np.where(lats == consts.map_lat2)[0])
         mesh_lons, mesh_lats = np.meshgrid(lons[lon1_index:lon2_index + 1], lats[lat1_index:lat2_index + 1])
 
-        x, y = map(mesh_lons, mesh_lats)
-        map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], 15, linewidths=1.5, colors='k')
+        x, y = rst_map(mesh_lons, mesh_lats)
+        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], 15, linewidths=1.5, colors='k')
 
         # Display the vorticity map if needed
         if self.vorticity_map is not None:
             subset_vorticity_map = self.vorticity_map[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1]
-            map.contour(x, y, subset_vorticity_map, 10, linewidths=0.5, colors='k')
-            map.contourf(x, y, subset_vorticity_map, 10)
-            map.colorbar()
+            rst_map.contour(x, y, subset_vorticity_map, 10, linewidths=0.5, colors='k')
+            cs = rst_map.contourf(x, y, subset_vorticity_map, 10)
 
         # Display the geostrophic vorticity map if needed
         if self.geostrophic_vorticity_map is not None:
             subset_geostrophic_vorticity_map = self.geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
-            map.contour(x, y, subset_geostrophic_vorticity_map, 10, linewidths=0.5, colors='k')
-            map.contourf(x, y, subset_geostrophic_vorticity_map, 10)
-            map.colorbar()
+            rst_map.contour(x, y, subset_geostrophic_vorticity_map, 10, linewidths=0.5, colors='k')
+            cs = rst_map.contourf(x, y, subset_geostrophic_vorticity_map, 10)
+
+        # Add Colorbar
+        plt.colorbar(cs)
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
             for current_lat in range(lat1_index, lat2_index):
                 for current_lon in range(lon1_index, lon2_index):
-                    x_dot, y_dot = map(lons[current_lon],  lats[current_lat])
+                    x_dot, y_dot = rst_map(lons[current_lon],  lats[current_lat])
                     if self.troughs_map[current_lat, current_lon] == 1:
-                        map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='b')
+                        rst_map.plot(x_dot, y_dot, 'D-', markersize=5, color='k', markerfacecolor='b')
                     if self.ridges_map[current_lat, current_lon] == 1:
-                        map.plot(x_dot, y_dot, 'D-', markersize=10, color='k', markerfacecolor='r')
-
-        # Add the date
-        x_dot, y_dot = map(consts.map_lon1+1, consts.map_lat2-1)
-        current_date = self.data_string_time[self.current_day]
-        plt.text(x_dot, y_dot, current_date, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                        rst_map.plot(x_dot, y_dot, 'D-', markersize=5, color='k', markerfacecolor='r')
 
         # Draw the RST, if such exists (not empty).
         if any(self.trough_coordinates):
@@ -371,9 +374,9 @@ class PlotRSTs ():
                 trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop - 1) * consts.rst_resolution)
                 trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((self.trough_coordinates[loop]) * consts.rst_resolution)
 
-            x_trough, y_trough = map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
-            map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
-            map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
+            x_trough, y_trough = rst_map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
+            rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
+            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
 
         if show_rst_info: # Draw box3 and the 2 points
             lat_array_region = [consts.rst_square3_lat1,
@@ -386,29 +389,36 @@ class PlotRSTs ():
                                 consts.rst_square3_lon2,
                                 consts.rst_square3_lon1,
                                 consts.rst_square3_lon1]
-            x_region, y_region = map(lon_array_region, lat_array_region)
-            map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
+            x_region, y_region = rst_map(lon_array_region, lat_array_region)
+            rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
             if self.is_interpolated:
-                x_mark, y_mark = map(35,30)
-                map.plot(x_mark, y_mark, 'D-', markersize=10, color='blue')
-                x_mark, y_mark = map(35,32.5)
-                map.plot(x_mark, y_mark, 'D-', markersize=10, color='blue')
+                x_mark, y_mark = rst_map(35,30)
+                rst_map.plot(x_mark, y_mark, 'D-', markersize=5, color='blue')
+                x_mark, y_mark = rst_map(35,32.5)
+                rst_map.plot(x_mark, y_mark, 'D-', markersize=5, color='blue')
 
             # Add the points value
             if (self.geostrophic_vorticity_map is not None) and (self.is_interpolated):
-                data_string = "1st point: " + str(self.geostrophic_vorticity_map[4, 6])\
-                              +"  2nd point: " + str(self.geostrophic_vorticity_map[3, 6])
-                x_dot, y_dot = map(consts.map_lon1 + 1, consts.map_lat2 - 2)
-                plt.text(x_dot, y_dot, data_string, fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                data_string = "1st point: " + str(('%.2E' % self.geostrophic_vorticity_map[4, 6]))\
+                              +"  2nd point: " + str(('%.2E' % self.geostrophic_vorticity_map[3, 6]))
+                x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)
+                plt.text(x_dot, y_dot, data_string, fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
 
                 # Add a note for met rst conditions
-                x_dot, y_dot = map(consts.map_lon1 + 1, consts.map_lat2 - 3)
+                x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
                 if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
-                    plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                    plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
                 else:
-                    plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=20, bbox=dict(facecolor="white", alpha=0.5))
+                    plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
 
-        return map
+        # Add the date
+        x_dot, y_dot = rst_map(consts.map_lon1+1, consts.map_lat2-1)
+        current_date = self.data_string_time[self.current_day]
+        plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+
+
+
+        return rst_map
 
 
 def main():
@@ -416,22 +426,27 @@ def main():
 
     plotRSTs_instance = PlotRSTs()
 
-    for current_day in range(30):
-        is_rst_condition_met = plotRSTs_instance.calculate_maps_data(current_day,
-                                                                     use_interpolation=True,
-                                                                     show_vorticity=False,
-                                                                     show_geostrophic_vorticity=True,
-                                                                     show_dots=False)
-        rst_fig = large_fig(4, 3)
+    #for current_day in range(30):
+    current_day = "1985-01-01 12:00:00"
+    is_rst_condition_met = plotRSTs_instance.calculate_maps_data(current_day,
+                                                                 use_interpolation=True,
+                                                                 show_vorticity=False,
+                                                                 show_geostrophic_vorticity=True,
+                                                                 show_dots=False)
+    map_figure, map_axis = plt.subplots()
+    map_figure.set_figheight(8)
+    map_figure.set_figwidth(7)
+    rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True)
 
-        rst_map = plotRSTs_instance.create_map(show_rst_info=True)
-        plt.show()
+    #rst_fig = large_fig(4, 3)
+    #rst_map = plotRSTs_instance.create_map(show_rst_info=True)
+    plt.show()
 
-        if save_maps:
-            directory = ("C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/output/")
-            map_name = "Change me"  # TODO make this name an appropriate one
-            filename = directory + map_name + ".png"
-            plt.savefig(filename)
+    if save_maps:
+        directory = ("C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/output/")
+        map_name = "Change me"  # TODO make this name an appropriate one
+        filename = directory + map_name + ".png"
+        plt.savefig(filename)
 
 
 if __name__ == "__main__":
