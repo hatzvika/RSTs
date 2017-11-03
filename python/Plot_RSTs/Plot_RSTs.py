@@ -298,7 +298,7 @@ class PlotRSTs ():
         return is_rst_condition_met
 
     # This function will create the map according to the flags sent in the previous calculate_maps_data method call
-    def create_map(self, map_axis, show_rst_info):
+    def create_map(self, map_axis, show_rst_info, req_colormap):
         if self.is_interpolated is None:
             print("Use the calculate_maps_data method before calling create_map")
             return
@@ -319,15 +319,16 @@ class PlotRSTs ():
 
         # Create the map object
         rst_map = Basemap(llcrnrlon=consts.map_lon1,
-                      llcrnrlat=consts.map_lat1,
-                      urcrnrlon=consts.map_lon2,
-                      urcrnrlat=consts.map_lat2,
-                      projection='merc',
-                      resolution='i',
-                      ax=map_axis)
+                          llcrnrlat=consts.map_lat1,
+                          urcrnrlon=consts.map_lon2,
+                          urcrnrlat=consts.map_lat2,
+                          projection='merc',
+                          resolution='i',
+                          ax=map_axis)
         rst_map.drawcoastlines()
         rst_map.drawparallels(np.arange(consts.map_lat1, consts.map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
         rst_map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
+        #map_axis.set(cmap = plt.cm.get_cmap('Blues_r')) #colormap = 'coolwarm',
         plt.title("Red Sea Troughs")
 
         # Calculate the meshes for the maps and plot SLP contours (always)
@@ -344,13 +345,13 @@ class PlotRSTs ():
         if self.vorticity_map is not None:
             subset_vorticity_map = self.vorticity_map[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1]
             rst_map.contour(x, y, subset_vorticity_map, 10, linewidths=0.5, colors='k')
-            cs = rst_map.contourf(x, y, subset_vorticity_map, 10)
+            cs = rst_map.contourf(x, y, subset_vorticity_map, 10, cmap = plt.cm.get_cmap(req_colormap))
 
         # Display the geostrophic vorticity map if needed
         if self.geostrophic_vorticity_map is not None:
             subset_geostrophic_vorticity_map = self.geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
             rst_map.contour(x, y, subset_geostrophic_vorticity_map, 10, linewidths=0.5, colors='k')
-            cs = rst_map.contourf(x, y, subset_geostrophic_vorticity_map, 10)
+            cs = rst_map.contourf(x, y, subset_geostrophic_vorticity_map, 10, cmap = plt.cm.get_cmap(req_colormap))
 
         # Add Colorbar
         plt.colorbar(cs)

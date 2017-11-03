@@ -176,11 +176,21 @@ class plot_RST_GUI:
                                      width=3,
                                      font=self.customFont)
 
+        self.choose_cb_label = tk.Label(self.frame_display_options, text=const_GUI.choose_cb_label, font=self.customFont)
+        self.cb_list = const_GUI.cb_list
+        self.cb_var = tk.StringVar()
+        self.cb_var.set(const_GUI.default_cb)
+        self.cb_menu = tk.OptionMenu(self.frame_display_options, self.cb_var, *self.cb_list)
+        self.cb_menu.config(font=self.customFont)
+
         # Define the display options layout
         self.font_size_label.grid(row=0, column=0, columnspan=3)
         self.smaller_font.grid(row=1, column=0)
         self.default_font.grid(row=1, column=1)
         self.bigger_font.grid(row=1, column=2)
+
+        self.choose_cb_label.grid(row=2, column=0, columnspan=3)
+        self.cb_menu.grid(row=3, column=0, columnspan=3)
 
         root.mainloop()
 
@@ -249,7 +259,9 @@ class plot_RST_GUI:
         map_figure, map_axis = plt.subplots()
         map_figure.set_figheight(8)
         map_figure.set_figwidth(7)
-        rst_map = self.plotRSTs_instance.create_map(map_axis, show_rst_info=self.show_rst_info.get())
+        rst_map = self.plotRSTs_instance.create_map(map_axis,
+                                                    show_rst_info=self.show_rst_info.get(),
+                                                    req_colormap=self.cb_var.get())
 
         if self.detached_map.get() == 0:
             # The map is drawn inside the current GUI

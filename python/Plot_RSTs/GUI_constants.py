@@ -42,3 +42,7 @@ font_size_label = 'Font Size'
 
 prev_day_button_text = 'Previous Day'
 next_day_button_text = 'Next Day'
+
+choose_cb_label = 'Choose Colorbar'
+default_cb = 'coolwarm'
+cb_list = ['coolwarm', 'seismic', 'jet', 'cool', 'winter', 'spectral']

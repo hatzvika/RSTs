@@ -37,8 +37,8 @@ rst_square2_lon2 = 37
 
 rst_square3_lat1 = 29
 rst_square3_lat2 = 33
-rst_square3_lon1 = 34
-rst_square3_lon2 = 36
+rst_square3_lon1 = 33
+rst_square3_lon2 = 37
 
 map_text_fontsize = 12
 
