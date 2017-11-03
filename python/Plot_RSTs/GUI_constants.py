@@ -39,3 +39,6 @@ detached_map_checkbutton = 'Detached Map'
 draw_button_text = 'Draw map'
 
 font_size_label = 'Font Size'
+
+prev_day_button_text = 'Previous Day'
+next_day_button_text = 'Next Day'

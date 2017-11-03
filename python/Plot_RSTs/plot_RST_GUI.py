@@ -110,6 +110,18 @@ class plot_RST_GUI:
         self.day_entry = tk.OptionMenu(self.frame_general_attributes, self.day_var, *self.day_list)
         self.day_entry.config(font=self.customFont)
 
+        self.prev_day_button = tk.Button(self.frame_general_attributes,
+                                         text=const_GUI.prev_day_button_text,
+                                         command=self.show_prev_day,
+                                         width=13,
+                                         font=self.customFont)
+        self.next_day_button = tk.Button(self.frame_general_attributes,
+                                         text=const_GUI.next_day_button_text,
+                                         command=self.show_next_day,
+                                         width=13,
+                                         font=self.customFont)
+
+
         self.files_path_label = tk.Label(self.frame_general_attributes, text=const_GUI.files_path_label, font=self.customFont)
         self.files_path_var = tk.StringVar()
         self.files_path_var.set(const_GUI.default_file_path)
@@ -139,6 +151,9 @@ class plot_RST_GUI:
         self.month_entry.grid(row=2, column=1)
         self.day_entry.grid(row=2, column=2)
 
+        self.prev_day_button.grid(row=4,column=0)
+        self.next_day_button.grid(row=4,column=2)
+
         self.detached_map_checkbutton.grid(row=3, column=3)
 
         self.draw_button.grid(row=5, column=3)
@@ -149,6 +164,7 @@ class plot_RST_GUI:
         self.smaller_font = tk.Button(self.frame_display_options,
                                       text="-",
                                       command=self.contract_font,
+                                      width=3,
                                       font=self.customFont)
         self.default_font = tk.Button(self.frame_display_options,
                                      text="Default",
@@ -157,6 +173,7 @@ class plot_RST_GUI:
         self.bigger_font = tk.Button(self.frame_display_options,
                                      text="+",
                                      command=self.enlarge_font,
+                                     width=3,
                                      font=self.customFont)
 
         # Define the display options layout
@@ -166,6 +183,36 @@ class plot_RST_GUI:
         self.bigger_font.grid(row=1, column=2)
 
         root.mainloop()
+
+    def show_prev_day(self):
+        current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
+        # Get the previous datetime object date from the plotRSTS instance
+        prev_date,_ = self.plotRSTs_instance.get_next_and_prev_days(current_day)
+
+        if prev_date:
+            prev_day_year = str(prev_date)[0:4]
+            prev_day_month = str(prev_date)[5:7]
+            prev_day_day = str(prev_date)[8:10]
+            self.year_var.set(prev_day_year)
+            self.month_var.set(prev_day_month)
+            self.day_var.set(prev_day_day)
+
+            self.draw_map()
+
+    def show_next_day(self):
+        current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
+        # Get the next string date from the plotRSTS instance
+        _, next_date = self.plotRSTs_instance.get_next_and_prev_days(current_day)
+
+        if next_date:
+            next_day_year = str(next_date)[0:4]
+            next_day_month = str(next_date)[5:7]
+            next_day_day = str(next_date)[8:10]
+            self.year_var.set(next_day_year)
+            self.month_var.set(next_day_month)
+            self.day_var.set(next_day_day)
+
+            self.draw_map()
 
     def enlarge_font(self):
         '''Make the font 2 points bigger'''

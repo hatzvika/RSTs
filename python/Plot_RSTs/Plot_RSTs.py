@@ -444,7 +444,20 @@ class PlotRSTs ():
 
         return rst_map
 
+    # return the prev day string date and next day string date for the Next/Prev days buttons in the GUI
+    def get_next_and_prev_days(self, current_date):
+        this_day = 0
+        for loop_day in range(self.data_string_time.shape[0]):
+            if str(self.data_string_time[loop_day]) == current_date:
+                this_day = loop_day
+                break
 
+        if this_day == 0:
+            return [], self.data_string_time[this_day + 1]
+        elif this_day == self.data_time.shape[0]-1:
+            return self.data_string_time[this_day - 1], []
+        else:
+            return self.data_string_time[this_day - 1], self.data_string_time[this_day + 1]
 def main():
     save_maps = False
 
