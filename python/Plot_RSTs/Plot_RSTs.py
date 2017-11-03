@@ -356,6 +356,18 @@ class PlotRSTs ():
         # Add Colorbar
         plt.colorbar(cs)
 
+        # Draw the RST, if such exists (not empty).
+        if any(self.trough_coordinates):
+            trough_length = self.trough_coordinates.shape[0]
+            trough_deg_coordinates = np.zeros((trough_length, 2))
+            for loop in range(trough_length):
+                trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop) * consts.rst_resolution)
+                trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((self.trough_coordinates[loop]) * consts.rst_resolution)
+
+            x_trough, y_trough = rst_map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
+            rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
+            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
+
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
             for current_lat in range(lat1_index, lat2_index):
@@ -377,18 +389,6 @@ class PlotRSTs ():
                                      color='red',
                                      markeredgecolor='black',
                                      markersize=5)
-
-        # Draw the RST, if such exists (not empty).
-        if any(self.trough_coordinates):
-            trough_length = self.trough_coordinates.shape[0]
-            trough_deg_coordinates = np.zeros((trough_length, 2))
-            for loop in range(trough_length):
-                trough_deg_coordinates[loop, 0] = consts.rst_lat1 + ((loop - 1) * consts.rst_resolution)
-                trough_deg_coordinates[loop, 1] = consts.rst_lon1 + ((self.trough_coordinates[loop]) * consts.rst_resolution)
-
-            x_trough, y_trough = rst_map(trough_deg_coordinates[:,1], trough_deg_coordinates[:,0])
-            rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
-            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
 
         if show_rst_info: # Draw box3 and the 2 points
             lat_array_region = [consts.rst_square3_lat1,
