@@ -1,10 +1,7 @@
 from sys import version_info
 
 import matplotlib
-import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 
 from python.Plot_RSTs.Plot_RSTs import PlotRSTs
@@ -169,8 +166,6 @@ class plot_RST_GUI:
             # The map is drawn in a seperate window
             main_seperate = tk.Tk()
             main_seperate.wm_title("Map")  # TODO change this
-
-            map_figure.add_subplot(111)
 
             # a tk.DrawingArea
             canvas = FigureCanvasTkAgg(map_figure, master=main_seperate)

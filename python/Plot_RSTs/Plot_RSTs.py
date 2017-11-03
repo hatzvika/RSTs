@@ -8,7 +8,6 @@ from python.Plot_RSTs.find_trough import find_trough
 import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
-from python.utils.large_fig import large_fig
 
 class PlotRSTs ():
     def __init__(self):
