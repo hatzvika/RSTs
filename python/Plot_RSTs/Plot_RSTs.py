@@ -361,9 +361,21 @@ class PlotRSTs ():
                 for current_lon in range(lon1_index, lon2_index):
                     x_dot, y_dot = rst_map(lons[current_lon],  lats[current_lat])
                     if self.troughs_map[current_lat, current_lon] == 1:
-                        rst_map.plot(x_dot, y_dot, 'D-', markersize=5, color='k', markerfacecolor='b')
+                        rst_map.plot(x_dot,
+                                     y_dot,
+                                     marker='o',
+                                     fillstyle='full',
+                                     color='blue',
+                                     markeredgecolor='black',
+                                     markersize=5)
                     if self.ridges_map[current_lat, current_lon] == 1:
-                        rst_map.plot(x_dot, y_dot, 'D-', markersize=5, color='k', markerfacecolor='r')
+                        rst_map.plot(x_dot,
+                                     y_dot,
+                                     marker='o',
+                                     fillstyle='full',
+                                     color='red',
+                                     markeredgecolor='black',
+                                     markersize=5)
 
         # Draw the RST, if such exists (not empty).
         if any(self.trough_coordinates):
@@ -392,9 +404,22 @@ class PlotRSTs ():
             rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
             if self.is_interpolated:
                 x_mark, y_mark = rst_map(35,30)
-                rst_map.plot(x_mark, y_mark, 'D-', markersize=5, color='blue')
+                rst_map.plot(x_mark,
+                             y_mark,
+                             marker='o',
+                             fillstyle = 'full',
+                             color='white',
+                             markeredgecolor='black',
+                             markersize=10)
+
                 x_mark, y_mark = rst_map(35,32.5)
-                rst_map.plot(x_mark, y_mark, 'D-', markersize=5, color='blue')
+                rst_map.plot(x_mark,
+                             y_mark,
+                             marker='o',
+                             fillstyle = 'full',
+                             color='white',
+                             markeredgecolor='black',
+                             markersize=10)
 
             # Add the points value
             if (self.geostrophic_vorticity_map is not None) and (self.is_interpolated):
