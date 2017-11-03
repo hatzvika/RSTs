@@ -11,13 +11,17 @@ matplotlib.use('TkAgg')
 
 if version_info[0] < 3:
     import Tkinter as tk
+    import tkFont
 else:
     import tkinter as tk
-
+    import tkinter.font as tkFont
 
 class plot_RST_GUI:
     def __init__(self, master):
         self.plotRSTs_instance = PlotRSTs()
+
+        # create a custom font
+        self.customFont = tkFont.Font(family="Helvetica", size=const_GUI.default_font_size)
 
         self.master = master
         self.master.title(const_GUI.title)
@@ -26,47 +30,54 @@ class plot_RST_GUI:
         # Define the GUI frames
         self.frame_data_options = tk.Frame(self.master)
         self.frame_general_attributes = tk.Frame(self.master)
+        self.frame_display_options = tk.Frame(self.master)
         self.frame_map = tk.Frame(self.master)
         self.frame_nav_toolbar = tk.Frame(self.master)
 
         # Define the GUI frame's layout
         self.frame_data_options.grid(row=0, column=0, sticky=tk.N, padx=5, pady=5)
-        self.frame_general_attributes.grid(row=0, column=2, sticky=tk.N, padx=5, pady=5)
+        self.frame_general_attributes.grid(row=0, column=1, sticky=tk.N, padx=5, pady=5)
+        self.frame_display_options.grid(row=0, column=2, sticky=tk.N, padx=5, pady=5)
         self.frame_map.grid(row=1, columnspan=4)
         self.frame_map.rowconfigure(0, weight=1)
         self.frame_nav_toolbar.grid(row=2, columnspan=2)
 
         # Define the data options widgets (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
         #                                  4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
-        self.data_options_label = tk.Label(self.frame_data_options, text=const_GUI.data_options_label)
+        self.data_options_label = tk.Label(self.frame_data_options, text=const_GUI.data_options_label, font=self.customFont)
 
         self.use_interpolation = tk.IntVar()
         self.use_interpolation.set(const_GUI.default_use_interpolation)
         self.checkbutton1_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_1,
-                                                        variable=self.use_interpolation)
+                                                        variable=self.use_interpolation,
+                                                        font=self.customFont)
         self.show_vorticity = tk.IntVar()
         self.show_vorticity.set(const_GUI.default_show_vorticity)
         self.checkbutton2_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_2,
                                                         variable=self.show_vorticity,
-                                                        command=self.vorticity_selected)
+                                                        command=self.vorticity_selected,
+                                                        font=self.customFont)
         self.show_geostrophic_vorticity = tk.IntVar()
         self.show_geostrophic_vorticity.set(const_GUI.default_show_geostrophic_vorticity)
         self.checkbutton3_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_3,
                                                         variable=self.show_geostrophic_vorticity,
-                                                        command=self.geostrophic_vorticity_selected)
+                                                        command=self.geostrophic_vorticity_selected,
+                                                        font=self.customFont)
         self.show_dots = tk.IntVar()
         self.show_dots.set(const_GUI.default_show_dots)
         self.checkbutton4_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_4,
-                                                        variable=self.show_dots)
+                                                        variable=self.show_dots,
+                                                        font=self.customFont)
         self.show_rst_info = tk.IntVar()
         self.show_rst_info.set(const_GUI.default_show_rst_info)
         self.checkbutton5_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_5,
-                                                        variable=self.show_rst_info)
+                                                        variable=self.show_rst_info,
+                                                        font=self.customFont)
 
         # Define the data options widget's layout (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
         #                                          4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
@@ -78,35 +89,43 @@ class plot_RST_GUI:
         self.checkbutton5_data_options.grid(row=5, column=0, sticky=tk.W)
 
         # Define the general attributes widgets
-        self.date_label = tk.Label(self.frame_general_attributes, text=const_GUI.date_label)
-        self.year_label = tk.Label(self.frame_general_attributes, text=const_GUI.year_label)
-        self.month_label = tk.Label(self.frame_general_attributes, text=const_GUI.month_label)
-        self.day_label = tk.Label(self.frame_general_attributes, text=const_GUI.day_label)
+        self.date_label = tk.Label(self.frame_general_attributes, text=const_GUI.date_label, font=self.customFont)
+        self.year_label = tk.Label(self.frame_general_attributes, text=const_GUI.year_label, font=self.customFont)
+        self.month_label = tk.Label(self.frame_general_attributes, text=const_GUI.month_label, font=self.customFont)
+        self.day_label = tk.Label(self.frame_general_attributes, text=const_GUI.day_label, font=self.customFont)
         self.year_list = [str(x) for x in range(1996, 2017)]
         self.year_var = tk.StringVar()
         self.year_var.set(const_GUI.default_year)
         self.year_entry = tk.OptionMenu(self.frame_general_attributes, self.year_var, *self.year_list)
+        self.year_entry.config(font=self.customFont)
         self.year_entry.configure(state="disabled")
         self.month_list = ["%02d" % x for x in range(1, 13)]
         self.month_var = tk.StringVar()
         self.month_var.set(const_GUI.default_month)
         self.month_entry = tk.OptionMenu(self.frame_general_attributes, self.month_var, *self.month_list)
+        self.month_entry.config(font=self.customFont)
         self.day_list = ["%02d" % x for x in range(1, 32)]
         self.day_var = tk.StringVar()
         self.day_var.set(const_GUI.default_day)
         self.day_entry = tk.OptionMenu(self.frame_general_attributes, self.day_var, *self.day_list)
+        self.day_entry.config(font=self.customFont)
 
-        self.files_path_label = tk.Label(self.frame_general_attributes, text=const_GUI.files_path_label)
+        self.files_path_label = tk.Label(self.frame_general_attributes, text=const_GUI.files_path_label, font=self.customFont)
         self.files_path_var = tk.StringVar()
         self.files_path_var.set(const_GUI.default_file_path)
-        self.files_path_entry = tk.Entry(self.frame_general_attributes, textvariable=self.files_path_var)
+        self.files_path_entry = tk.Entry(self.frame_general_attributes, textvariable=self.files_path_var, font=self.customFont)
 
         self.detached_map = tk.IntVar()
         self.detached_map.set(0)
-        self.detached_map_checkbutton = tk.Checkbutton(self.frame_general_attributes, variable=self.detached_map,
-                                                       text=const_GUI.detached_map_checkbutton)
+        self.detached_map_checkbutton = tk.Checkbutton(self.frame_general_attributes,
+                                                       variable=self.detached_map,
+                                                       text=const_GUI.detached_map_checkbutton,
+                                                       font=self.customFont)
 
-        self.draw_button = tk.Button(self.frame_general_attributes, text=const_GUI.draw_button_text, command=self.draw_map)
+        self.draw_button = tk.Button(self.frame_general_attributes,
+                                     text=const_GUI.draw_button_text,
+                                     command=self.draw_map,
+                                     font=self.customFont)
 
         # Define the general attributes layout
         self.files_path_label.grid(row=0, column=3, padx=10)
@@ -123,6 +142,43 @@ class plot_RST_GUI:
         self.detached_map_checkbutton.grid(row=3, column=3)
 
         self.draw_button.grid(row=5, column=3)
+
+        # Define display options widgets
+        # Buttons to adjust the font
+        self.font_size_label = tk.Label(self.frame_display_options, text=const_GUI.font_size_label, font=self.customFont)
+        self.smaller_font = tk.Button(self.frame_display_options,
+                                      text="-",
+                                      command=self.contract_font,
+                                      font=self.customFont)
+        self.default_font = tk.Button(self.frame_display_options,
+                                     text="Default",
+                                     command=self.make_default_font_size,
+                                     font=self.customFont)
+        self.bigger_font = tk.Button(self.frame_display_options,
+                                     text="+",
+                                     command=self.enlarge_font,
+                                     font=self.customFont)
+
+        # Define the display options layout
+        self.font_size_label.grid(row=0, column=0, columnspan=3)
+        self.smaller_font.grid(row=1, column=0)
+        self.default_font.grid(row=1, column=1)
+        self.bigger_font.grid(row=1, column=2)
+
+        root.mainloop()
+
+    def enlarge_font(self):
+        '''Make the font 2 points bigger'''
+        size = self.customFont['size']
+        self.customFont.configure(size=size + 2)
+
+    def contract_font(self):
+        '''Make the font 2 points smaller'''
+        size = self.customFont['size']
+        self.customFont.configure(size=size - 2)
+
+    def make_default_font_size(self):
+        self.customFont.configure(size=const_GUI.default_font_size)
 
     def vorticity_selected(self):
         # vorticity and geostrophic vorticity will always be opposite to each other

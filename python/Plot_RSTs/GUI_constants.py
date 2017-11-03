@@ -13,6 +13,8 @@ default_year = "1985"
 default_month = "05"
 default_day = "01"
 
+default_font_size = 10
+
 # Strings constants
 title = "Find RSTs GUI"
 
@@ -35,3 +37,5 @@ day_label = 'Day'
 detached_map_checkbutton = 'Detached Map'
 
 draw_button_text = 'Draw map'
+
+font_size_label = 'Font Size'
