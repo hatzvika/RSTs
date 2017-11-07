@@ -1,7 +1,7 @@
 # This file holds some values used by the Plot_RSTs script and which are seldom changed.
 
 # The location of the data files
-raw_data_prefix = "C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/Raw_data/"
+raw_data_prefix = "Sample Data/"
 
 # The interpolation resolution of the maps' data (not for the find_torugh method)
 interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
@@ -13,7 +13,7 @@ rst_resolution = 0.5
 interpolation_method = 3
 
 # The coordiantes for the plotted area
-map_lat1 = 25
+map_lat1 = 20
 map_lat2 = 45
 map_lon1 = 25
 map_lon2 = 45
