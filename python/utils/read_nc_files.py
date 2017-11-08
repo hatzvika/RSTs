@@ -7,19 +7,31 @@ from netCDF4 import Dataset, num2date
 import numpy as np
 
 
-def read_nc_files(filename, var_name, start_time=0, delta_time=1, flip_lats=True):
+def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
     file_nc = Dataset(filename)
+
+    variable_list = list(file_nc.variables.keys())
+    for current_var in range(len(variable_list)):
+        variable_name = variable_list[current_var]
+        if variable_name.startswith('lon'):
+            lon_str = variable_name
+        elif variable_name.startswith('lat'):
+            lat_str = variable_name
+        elif variable_name.startswith('time'):
+            time_str = variable_name
+        else:
+            data_str = variable_name
 
     # flipping the data and lats because nc files come with descending lats
     if flip_lats:
-        file_data = np.flip(np.squeeze(file_nc.variables[var_name][start_time:-1:delta_time, :, :]), 1)
-        file_lats = np.flip(file_nc.variables['lat'][:], 0)
+        file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :]), 1)
+        file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:
-        file_data = np.squeeze(file_nc.variables[var_name][start_time:-1:delta_time, :, :])
-        file_lats = file_nc.variables['lat'][:]
+        file_data = np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :])
+        file_lats = file_nc.variables[lat_str][:]
 
-    file_lons = file_nc.variables['lon'][:]
-    file_indexed_time = file_nc.variables['time'][start_time:-1:delta_time]
-    file_string_time = num2date(file_indexed_time[:], file_nc.variables['time'].units)
+    file_lons = file_nc.variables[lon_str][:]
+    file_indexed_time = file_nc.variables[time_str][start_time:-1:delta_time]
+    file_string_time = num2date(file_indexed_time[:], file_nc.variables[time_str].units)
 
     return file_data, file_lats, file_lons, file_indexed_time, file_string_time

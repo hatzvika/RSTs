@@ -47,12 +47,14 @@ class PlotRSTs ():
 
     # Read the data files
     def _read_files(self):
-        slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_1985.nc"
-        slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, 'slp', start_time=2, delta_time=4)
+        # slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_1985.nc"
+        slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_1985.nc"
+        slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=2, delta_time=4)
+        # slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, 'msl', start_time=2, delta_time=4)
         uwind_filename = consts.raw_data_prefix + "uwind/uwind_NCEP_10-50N_20-50E_full_1985.nc"
-        uwind_data = read_nc_files(uwind_filename, 'uwnd', start_time=2, delta_time=4)[0]
+        uwind_data = read_nc_files(uwind_filename, start_time=2, delta_time=4)[0]
         vwind_filename = consts.raw_data_prefix + "vwind/vwind_NCEP_10-50N_20-50E_full_1985.nc"
-        vwind_data = read_nc_files(vwind_filename, 'vwnd', start_time=2, delta_time=4)[0]
+        vwind_data = read_nc_files(vwind_filename, start_time=2, delta_time=4)[0]
 
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
 
@@ -394,10 +396,10 @@ class PlotRSTs ():
         plt.title("Red Sea Troughs")
 
         # Calculate the meshes for the maps and plot SLP contours (always)
-        lon1_index = int(np.where(lons == consts.map_lon1)[0])
-        lon2_index = int(np.where(lons == consts.map_lon2)[0])
-        lat1_index = int(np.where(lats == consts.map_lat1)[0])
-        lat2_index = int(np.where(lats == consts.map_lat2)[0])
+        lon1_index = int(np.where(lons <= consts.map_lon1)[0][-1])
+        lon2_index = int(np.where(lons >= consts.map_lon2)[0][-1])
+        lat1_index = int(np.where(lats <= consts.map_lat1)[0][-1])
+        lat2_index = int(np.where(lats >= consts.map_lat2)[0][-1])
         mesh_lons, mesh_lats = np.meshgrid(lons[lon1_index:lon2_index + 1], lats[lat1_index:lat2_index + 1])
 
         x, y = rst_map(mesh_lons, mesh_lats)
