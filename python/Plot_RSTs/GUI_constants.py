@@ -19,11 +19,16 @@ default_font_size = 10
 title = "Find RSTs GUI"
 
 data_options_label = 'Map Options'
+data_to_map_label = 'Data To Map'
+default_data_to_map = 'Geostrophic Vorticity'
+model_data_label = 'Dataset'
+models_list = ['NCEP', 'ERA Interim']
+default_model_data = models_list[0]
+data_to_map_list = ['Geostrophic Vorticity', 'Vorticity']
+
 data_options_1 = 'Use interpolation'
-data_options_2 = 'Show vorticity'
-data_options_3 = 'Show geostrophic vorticity'
-data_options_4 = 'Show troughs/ridges dots'
-data_options_5 = 'Show RST info'
+data_options_2 = 'Show troughs/ridges dots'
+data_options_3 = 'Show RST info'
 
 cross_section_label = 'General Options'
 

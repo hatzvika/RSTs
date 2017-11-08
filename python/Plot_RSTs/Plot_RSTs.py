@@ -9,7 +9,7 @@ from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
 
 class PlotRSTs ():
-    def __init__(self):
+    def __init__(self, model_data='NCEP'):
 
         # Read the data files
         (self.orig_slp_data,
@@ -18,7 +18,7 @@ class PlotRSTs ():
          self.orig_data_lats,
          self.orig_data_lons,
          self.data_time,
-         self.data_string_time) = self._read_files()
+         self.data_string_time) = self._read_files(model_data)
 
         # Interpolate the data. All the data is interpolated and the
         # decision on which data to use is left outside the class
@@ -46,14 +46,21 @@ class PlotRSTs ():
         self.mean_geos_vort_square3 = None
 
     # Read the data files
-    def _read_files(self):
-        # slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_1985.nc"
-        slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_1985.nc"
+    def _read_files(self, model_data):
+        if model_data == 'NCEP':
+            slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_1985.nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_NCEP_10-50N_20-50E_full_1985.nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_NCEP_10-50N_20-50E_full_1985.nc"
+        elif model_data == 'ERA_Interim':
+            slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_1985.nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
+        else:
+            print("Wrong model_data name")
+            return
+
         slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=2, delta_time=4)
-        # slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, 'msl', start_time=2, delta_time=4)
-        uwind_filename = consts.raw_data_prefix + "uwind/uwind_NCEP_10-50N_20-50E_full_1985.nc"
         uwind_data = read_nc_files(uwind_filename, start_time=2, delta_time=4)[0]
-        vwind_filename = consts.raw_data_prefix + "vwind/vwind_NCEP_10-50N_20-50E_full_1985.nc"
         vwind_data = read_nc_files(vwind_filename, start_time=2, delta_time=4)[0]
 
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
@@ -96,7 +103,7 @@ class PlotRSTs ():
 
         return interp_slp_data, interp_uwind_data, interp_vwind_data, interp_data_lats, interp_data_lons
 
-    def calculate_maps_data(self, current_day, use_interpolation, show_vorticity, show_geostrophic_vorticity, show_dots):
+    def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots):
         # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
         if type(current_day) is int:
             self.current_day = current_day
@@ -105,6 +112,18 @@ class PlotRSTs ():
                 if str(self.data_string_time[loop_day]) == current_day:
                     self.current_day = loop_day
                     break
+
+        # Decide data type flags according to data_to_map
+        if data_to_map == 'Geostrophic Vorticity':
+            show_geostrophic_vorticity = True
+            show_vorticity = False
+        elif data_to_map == 'Vorticity':
+            show_geostrophic_vorticity = False
+            show_vorticity = True
+        else:
+            print("Wrong data_to_map string")
+            return
+
 
         # Prepare the right data depending on interpolation
         if use_interpolation:

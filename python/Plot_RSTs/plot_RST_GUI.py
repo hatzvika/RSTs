@@ -18,7 +18,8 @@ else:
 
 class plot_RST_GUI:
     def __init__(self, master):
-        self.plotRSTs_instance = PlotRSTs()
+        self.plotRSTs_NCEP_instance = PlotRSTs('NCEP')
+        self.plotRSTs_ERA_instance = PlotRSTs('ERA_Interim')
 
         # create a custom font
         self.customFont = tkFont.Font(family="Helvetica", size=const_GUI.default_font_size)
@@ -42,51 +43,56 @@ class plot_RST_GUI:
         self.frame_map.rowconfigure(0, weight=1)
         self.frame_nav_toolbar.grid(row=2, columnspan=2)
 
-        # Define the data options widgets (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
-        #                                  4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
+        # Define the data options widgets
         self.data_options_label = tk.Label(self.frame_data_options, text=const_GUI.data_options_label, font=self.customFont)
+        # Choose NCEP or ERA Interim
+        self.model_data_label = tk.Label(self.frame_data_options, text=const_GUI.model_data_label, font=self.customFont)
+        self.model_data_list = const_GUI.models_list
+        self.model_data_var = tk.StringVar()
+        self.model_data_var.set(const_GUI.default_model_data)
+        self.model_data_entry = tk.OptionMenu(self.frame_data_options, self.model_data_var, *self.model_data_list)
+        self.model_data_entry.config(font=self.customFont)
 
+        # Choose Geostrophic Vorticity or just Vorticity
+        self.data_to_map_label = tk.Label(self.frame_data_options, text=const_GUI.data_to_map_label, font=self.customFont)
+        self.data_to_map_list = const_GUI.data_to_map_list
+        self.data_to_map_var = tk.StringVar()
+        self.data_to_map_var.set(const_GUI.default_data_to_map)
+        self.data_to_map_entry = tk.OptionMenu(self.frame_data_options, self.data_to_map_var, *self.data_to_map_list)
+        self.data_to_map_entry.config(font=self.customFont)
+
+        # 'Use interpolation'
         self.use_interpolation = tk.IntVar()
         self.use_interpolation.set(const_GUI.default_use_interpolation)
         self.checkbutton1_data_options = tk.Checkbutton(self.frame_data_options,
                                                         text=const_GUI.data_options_1,
                                                         variable=self.use_interpolation,
                                                         font=self.customFont)
-        self.show_vorticity = tk.IntVar()
-        self.show_vorticity.set(const_GUI.default_show_vorticity)
-        self.checkbutton2_data_options = tk.Checkbutton(self.frame_data_options,
-                                                        text=const_GUI.data_options_2,
-                                                        variable=self.show_vorticity,
-                                                        command=self.vorticity_selected,
-                                                        font=self.customFont)
-        self.show_geostrophic_vorticity = tk.IntVar()
-        self.show_geostrophic_vorticity.set(const_GUI.default_show_geostrophic_vorticity)
-        self.checkbutton3_data_options = tk.Checkbutton(self.frame_data_options,
-                                                        text=const_GUI.data_options_3,
-                                                        variable=self.show_geostrophic_vorticity,
-                                                        command=self.geostrophic_vorticity_selected,
-                                                        font=self.customFont)
+        # 'Show troughs/ridges dots'
         self.show_dots = tk.IntVar()
         self.show_dots.set(const_GUI.default_show_dots)
-        self.checkbutton4_data_options = tk.Checkbutton(self.frame_data_options,
-                                                        text=const_GUI.data_options_4,
+        self.checkbutton2_data_options = tk.Checkbutton(self.frame_data_options,
+                                                        text=const_GUI.data_options_2,
                                                         variable=self.show_dots,
                                                         font=self.customFont)
+        # 'Show RST info'
         self.show_rst_info = tk.IntVar()
         self.show_rst_info.set(const_GUI.default_show_rst_info)
-        self.checkbutton5_data_options = tk.Checkbutton(self.frame_data_options,
-                                                        text=const_GUI.data_options_5,
+        self.checkbutton3_data_options = tk.Checkbutton(self.frame_data_options,
+                                                        text=const_GUI.data_options_3,
                                                         variable=self.show_rst_info,
                                                         font=self.customFont)
 
         # Define the data options widget's layout (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
         #                                          4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
         self.data_options_label.grid(row=0, column=0)
-        self.checkbutton1_data_options.grid(row=1, column=0, sticky=tk.W)
-        self.checkbutton2_data_options.grid(row=2, column=0, sticky=tk.W)
-        self.checkbutton3_data_options.grid(row=3, column=0, sticky=tk.W)
-        self.checkbutton4_data_options.grid(row=4, column=0, sticky=tk.W)
-        self.checkbutton5_data_options.grid(row=5, column=0, sticky=tk.W)
+        self.model_data_label.grid(row=1, column=0, sticky=tk.W)
+        self.model_data_entry.grid(row=2, column=0, sticky=tk.W)
+        self.data_to_map_label.grid(row=3, column=0, sticky=tk.W)
+        self.data_to_map_entry.grid(row=4, column=0, sticky=tk.W)
+        self.checkbutton1_data_options.grid(row=5, column=0, sticky=tk.W)
+        self.checkbutton2_data_options.grid(row=6, column=0, sticky=tk.W)
+        self.checkbutton3_data_options.grid(row=7, column=0, sticky=tk.W)
 
         # Define the general attributes widgets
         self.date_label = tk.Label(self.frame_general_attributes, text=const_GUI.date_label, font=self.customFont)
@@ -197,7 +203,7 @@ class plot_RST_GUI:
     def show_prev_day(self):
         current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
         # Get the previous datetime object date from the plotRSTS instance
-        prev_date,_ = self.plotRSTs_instance.get_next_and_prev_days(current_day)
+        prev_date,_ = self.plotRSTs_NCEP_instance.get_next_and_prev_days(current_day)
 
         if prev_date:
             prev_day_year = str(prev_date)[0:4]
@@ -212,7 +218,7 @@ class plot_RST_GUI:
     def show_next_day(self):
         current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
         # Get the next string date from the plotRSTS instance
-        _, next_date = self.plotRSTs_instance.get_next_and_prev_days(current_day)
+        _, next_date = self.plotRSTs_NCEP_instance.get_next_and_prev_days(current_day)
 
         if next_date:
             next_day_year = str(next_date)[0:4]
@@ -237,31 +243,32 @@ class plot_RST_GUI:
     def make_default_font_size(self):
         self.customFont.configure(size=const_GUI.default_font_size)
 
-    def vorticity_selected(self):
-        # vorticity and geostrophic vorticity will always be opposite to each other
-        # and here is where they are both reversed
-        self.show_geostrophic_vorticity.set(False)
-
-    def geostrophic_vorticity_selected(self):
-        # vorticity and geostrophic vorticity will always be opposite to each other
-        # and here is where they are both reversed
-        self.show_vorticity.set(False)
-
     def draw_map(self):
         # The first part is completely done by matplotlib, and then transferred to Tkinter
         current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
 
-        is_rst_condition_met = self.plotRSTs_instance.calculate_maps_data(current_day,
-                                                                          use_interpolation=self.use_interpolation.get(),
-                                                                          show_vorticity=self.show_vorticity.get(),
-                                                                          show_geostrophic_vorticity=self.show_geostrophic_vorticity.get(),
-                                                                          show_dots=self.show_dots.get())
         map_figure, map_axis = plt.subplots()
         map_figure.set_figheight(8)
         map_figure.set_figwidth(7)
-        rst_map = self.plotRSTs_instance.create_map(map_axis,
-                                                    show_rst_info=self.show_rst_info.get(),
-                                                    req_colormap=self.cb_var.get())
+
+        if self.model_data_var.get() == const_GUI.models_list[0]:
+            # Plot the NCEP model data
+            is_rst_condition_met = self.plotRSTs_NCEP_instance.calculate_maps_data(current_day,
+                                                                                   use_interpolation=self.use_interpolation.get(),
+                                                                                   data_to_map=self.data_to_map_var.get(),
+                                                                                   show_dots=self.show_dots.get())
+            rst_map = self.plotRSTs_NCEP_instance.create_map(map_axis,
+                                                             show_rst_info=self.show_rst_info.get(),
+                                                             req_colormap=self.cb_var.get())
+        elif self.model_data_var.get() == const_GUI.models_list[1]:
+            # Plot the ERA Interim model data
+            is_rst_condition_met = self.plotRSTs_ERA_instance.calculate_maps_data(current_day,
+                                                                                  use_interpolation=self.use_interpolation.get(),
+                                                                                  data_to_map=self.data_to_map_var.get(),
+                                                                                  show_dots=self.show_dots.get())
+            rst_map = self.plotRSTs_ERA_instance.create_map(map_axis,
+                                                            show_rst_info=self.show_rst_info.get(),
+                                                            req_colormap=self.cb_var.get())
 
         if self.detached_map.get() == 0:
             # The map is drawn inside the current GUI
