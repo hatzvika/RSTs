@@ -7,6 +7,7 @@ from mpl_toolkits.basemap import Basemap
 import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
+from python.Plot_RSTs.calculate_rst import calculate_rst
 
 class PlotRSTs ():
     def __init__(self, model_data='NCEP'):
@@ -37,7 +38,7 @@ class PlotRSTs ():
         self.troughs_map, self.ridges_map = None, None
         self.vorticity_map = None
         self.geostrophic_vorticity_map = None
-        self.trough_coordinates = None
+        self.trough_coordinates_matrix = None
 
         # The squares mean value for the RST condition met check
         self.mean_slp_square1 = None
@@ -153,11 +154,11 @@ class PlotRSTs ():
             self.troughs_map, self.ridges_map = None, None
 
         # Find Red Sea Trough
-        self.trough_coordinates = self._calculate_rst(slp_data, resolution, lats, lons)
+        self.trough_coordinates_matrix = calculate_rst(slp_data, resolution, lats, lons, method=1)
 
         # Calculate RST conditions in 3 boxes
         is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
-                                                                       show_geostrophic_vorticity, self.trough_coordinates)
+                                                                       show_geostrophic_vorticity, self.trough_coordinates_matrix)
 
 
         return is_rst_condition_met
@@ -251,85 +252,6 @@ class PlotRSTs ():
 
         return geostrophic_vorticity_map
 
-    # This function returns the RST lat/lon array (if any)
-    # after interpolating the SLP data if needed.
-    def _calculate_rst(self, slp_data, resolution, lats, lons):
-        if consts.rst_resolution != resolution:
-            # The data and the rst resolutions are different. Needs the interpolation for the find_trough function
-            slp_data, lats, lons = my_interp(slp_data, lats, lons, consts.rst_resolution, consts.interpolation_method)
-        lowest_lat = lats[0]
-        lowest_lon = lons[0]
-        multiplier = 1 / consts.rst_resolution
-        indexed_rst_lat1 = int((consts.rst_lat1 - lowest_lat) * multiplier)
-        indexed_rst_lat2 = int((consts.rst_lat2 - lowest_lat) * multiplier)
-        indexed_rst_lon1 = int((consts.rst_lon1 - lowest_lon) * multiplier)
-        indexed_rst_lon2 = int((consts.rst_lon2 - lowest_lon) * multiplier)
-
-        slp_check_distance = 3  # grid points. 3 * 0.5 = 1.5 deg.
-        next_point_search_distance = 5  # grid points. 5 * 0.5 = 2.5 deg.
-        total_lat = slp_data.shape[0]
-        total_lon = slp_data.shape[1]
-        trough_coords = np.zeros((total_lat,2))  # [x1, y1; x2, y2; etc.]
-
-        # Find the first point of the trough by comparing slp values to the ones at
-        # a distance of +/- slp_check_distance.
-        maximum_diff = 0
-        last_found_point_lon = 0
-        for current_lon in range(max(slp_check_distance, indexed_rst_lon1),
-                                 min(total_lon-slp_check_distance,indexed_rst_lon2+1)):
-            current_slp = slp_data[indexed_rst_lat1, current_lon]
-            compared_slp_1 = slp_data[indexed_rst_lat1, current_lon - slp_check_distance]
-            compared_slp_2 = slp_data[indexed_rst_lat1, current_lon + slp_check_distance]
-            if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
-                current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
-                if current_maxima > maximum_diff:
-                    trough_coords[0,:] = lats[indexed_rst_lat1], lons[current_lon]
-                    last_found_point_lon = current_lon
-                    maximum_diff = current_maxima
-
-        # Find the following points, if a starting point was found.
-        if trough_coords[0, 0] > 0:
-            for current_lat in range(indexed_rst_lat1 + 1, indexed_rst_lat2 + 1):
-                maximum_diff = 0
-                for current_lon in range(int(max(last_found_point_lon - next_point_search_distance, slp_check_distance)),
-                                         int(min(last_found_point_lon + next_point_search_distance,indexed_rst_lon2+1))):
-                    current_slp = slp_data[current_lat, current_lon]
-                    compared_slp_1 = slp_data[current_lat, current_lon - slp_check_distance]
-                    compared_slp_2 = slp_data[current_lat, current_lon + slp_check_distance]
-                    if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
-                        current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
-                        if current_maxima > maximum_diff:
-                            trough_coords[current_lat - indexed_rst_lat1, :] = lats[current_lat], lons[current_lon]
-                            last_found_point_lon = current_lon
-                            maximum_diff = current_maxima
-
-                    if current_lat < total_lat:  # Check diagonaly.
-                        compared_slp_1 = slp_data[current_lat + 1, current_lon - slp_check_distance]
-                        compared_slp_2 = slp_data[current_lat - 1, current_lon + slp_check_distance]
-                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
-                            current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
-                            if current_maxima > maximum_diff:
-                                trough_coords[current_lat - indexed_rst_lat1, :] = lats[current_lat], lons[current_lon]
-                                last_found_point_lon = current_lon
-                                maximum_diff = current_maxima
-
-                        compared_slp_1 = slp_data[current_lat - 1, current_lon - slp_check_distance]
-                        compared_slp_2 = slp_data[current_lat + 1, current_lon + slp_check_distance]
-                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
-                            current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
-                            if current_maxima > maximum_diff:
-                                trough_coords[current_lat - indexed_rst_lat1, :] = lats[current_lat], lons[current_lon]
-                                last_found_point_lon = current_lon
-                                maximum_diff = current_maxima
-
-                if maximum_diff == 0:
-                    break
-
-        # Remove the trailing zeros at the end of trough_coords
-        trough_coords = trough_coords[~(trough_coords == 0).all(1)]
-
-        return trough_coords
-
     # Calculate the mean SLP in the RST squares
     def _calculate_rst_conditions_in_boxes(self, slp_data, geostrophic_vorticity_map, lats, lons, resolution,
                                            show_geostrophic_vorticity, trough_coordinates):
@@ -370,7 +292,7 @@ class PlotRSTs ():
                 print('RST square conditions are not met')
             print('=====================================')
 
-            if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0) and (self.trough_coordinates is not None):
+            if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0) and (self.trough_coordinates_matrix.any()):
                 is_rst_condition_met = True
             else:
                 is_rst_condition_met = False
@@ -455,9 +377,15 @@ class PlotRSTs ():
             # Add Colorbar
             plt.colorbar(cs)
 
-        # Draw the RST, if such exists (not empty).
-        if self.trough_coordinates is not None:
-            x_trough, y_trough = rst_map(self.trough_coordinates[:,1], self.trough_coordinates[:,0])
+        # Draw the RSTs, if any
+        for current_RST in range(consts.max_number_of_RST):
+            # Get the current trough columns from the trough matrix
+            trough_coords = self.trough_coordinates_matrix[:, 2*current_RST:2*current_RST+2]
+            # remove all zeros from current RST
+            trough_coords = trough_coords[~(trough_coords == 0).all(1)]
+
+
+            x_trough, y_trough = rst_map(trough_coords[:, 1], trough_coords[:, 0])
             rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
             rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
 

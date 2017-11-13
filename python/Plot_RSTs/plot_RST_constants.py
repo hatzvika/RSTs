@@ -12,6 +12,9 @@ rst_resolution = 0.5
 # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
 interpolation_method = 3
 
+# Number of possible RSTs found in a single map
+max_number_of_RST = 10
+
 # The coordiantes for the plotted area
 map_lat1 = 20
 map_lat2 = 45
