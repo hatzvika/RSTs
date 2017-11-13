@@ -424,26 +424,35 @@ class PlotRSTs ():
         x, y = rst_map(mesh_lons, mesh_lats)
         rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], 15, linewidths=1.5, colors='k')
 
-        # Display the vorticity map if needed
+        # Prepare the selected subsetmap
+        subset_map = None
         if self.vorticity_map is not None:
-            subset_vorticity_map = self.vorticity_map[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1]
-            rst_map.contour(x, y, subset_vorticity_map, 10, linewidths=0.5, colors='k')
-            cs = rst_map.contourf(x, y, subset_vorticity_map, 10, cmap = plt.cm.get_cmap(req_colormap))
+            subset_map = self.vorticity_map[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1]
 
         # Display the geostrophic vorticity map if needed
         if self.geostrophic_vorticity_map is not None:
-            subset_geostrophic_vorticity_map = self.geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
-            rst_map.contour(x, y, subset_geostrophic_vorticity_map, 10, linewidths=0.5, colors='k')
-            cs = rst_map.contourf(x, y, subset_geostrophic_vorticity_map, 10, cmap = plt.cm.get_cmap(req_colormap))
+            subset_map = self.geostrophic_vorticity_map[lat1_index:lat2_index+1, lon1_index:lon2_index+1]
 
-        # Add Colorbar
-        plt.colorbar(cs)
+        # Display the selected map
+        if subset_map is not None:
+            rst_map.contour(x, y, subset_map, 10, linewidths=0.5, colors='k')
+            max_value = subset_map.max()
+            min_value = subset_map.min()
+            if min_value < 0 and max_value > 0:
+                if max_value > abs(min_value):
+                    min_value = -max_value
+                else:
+                    max_value = abs(min_value)
+            cs = rst_map.contourf(x, y, subset_map, 10, cmap=plt.cm.get_cmap(req_colormap), vmin=min_value, vmax=max_value)
+
+            # Add Colorbar
+            plt.colorbar(cs)
 
         # Draw the RST, if such exists (not empty).
         if self.trough_coordinates is not None:
             x_trough, y_trough = rst_map(self.trough_coordinates[:,1], self.trough_coordinates[:,0])
             rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
-            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='red')
+            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
@@ -544,14 +553,13 @@ def main():
     #for current_day in range(30):
     current_day = "1985-01-01 12:00:00"
     is_rst_condition_met = plotRSTs_instance.calculate_maps_data(current_day,
-                                                                 use_interpolation=True,
-                                                                 show_vorticity=False,
-                                                                 show_geostrophic_vorticity=True,
-                                                                 show_dots=False)
+                                                                                   use_interpolation=True,
+                                                                                   data_to_map='NCEP',
+                                                                                   show_dots=True)
     map_figure, map_axis = plt.subplots()
     map_figure.set_figheight(8)
     map_figure.set_figwidth(7)
-    rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True)
+    rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True, req_colormap='coolwarm')
 
     #rst_fig = large_fig(4, 3)
     #rst_map = plotRSTs_instance.create_map(show_rst_info=True)

@@ -21,7 +21,7 @@ map_lon2 = 45
 # The coordiantes for the RST area, in which the trough is searched (by find_trough())
 rst_lat1 = 27.5
 rst_lat2 = 42.5
-rst_lon1 = 32.5
+rst_lon1 = 30
 rst_lon2 = 42.5
 
 # The coordiantes for the box areas, in which the conditions for an RST existance are calculated
@@ -37,8 +37,8 @@ rst_square2_lon2 = 37
 
 rst_square3_lat1 = 29
 rst_square3_lat2 = 33
-rst_square3_lon1 = 33
-rst_square3_lon2 = 37
+rst_square3_lon1 = 32.5
+rst_square3_lon2 = 37.5
 
 map_text_fontsize = 12
 

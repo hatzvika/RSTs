@@ -13,7 +13,7 @@ default_year = "1985"
 default_month = "05"
 default_day = "01"
 
-default_font_size = 10
+default_font_size = 12
 
 # Strings constants
 title = "Find RSTs GUI"
