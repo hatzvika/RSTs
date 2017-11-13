@@ -24,10 +24,8 @@ class PlotRSTs ():
         # Interpolate the data. All the data is interpolated and the
         # decision on which data to use is left outside the class
         (self.interp_slp_data,
-         self.interp_uwind_data,
-         self.interp_vwind_data,
          self.interp_data_lats,
-         self.interp_data_lons) = self._interpolate_data()
+         self.interp_data_lons) = self._interpolate_data(self.orig_slp_data)
 
         # is_interpolated is a flag used for determining if the current maps are
         # interpolated maps. This flag is set when calculate_maps_data is called
@@ -67,44 +65,30 @@ class PlotRSTs ():
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
 
     # Interpolation of the data
-    def _interpolate_data(self):
+    def _interpolate_data(self, data_to_interpolate):
         # Find the interp lats and lons to create the temporary data holders.
-        _, interp_data_lats, interp_data_lons = my_interp(self.orig_slp_data[0, :, :],
+        _, interp_data_lats, interp_data_lons = my_interp(data_to_interpolate[0, :, :],
                                                           self.orig_data_lats,
                                                           self.orig_data_lons,
                                                           consts.interp_resolution,
                                                           consts.interpolation_method)
-        # The vorticity files have different length
-        slp_total_days = self.orig_slp_data.shape[0]
-        vort_total_days = self.orig_uwind_data.shape[0]
+        total_days = data_to_interpolate.shape[0]
 
         # Create interpolated files
-        interp_slp_data = np.zeros((slp_total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
-        interp_uwind_data = np.zeros((vort_total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
-        interp_vwind_data = np.zeros((vort_total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
+        interp_data = np.zeros((total_days, interp_data_lats.shape[0], interp_data_lons.shape[0]))
 
-        for current_day in range(slp_total_days):
-            interp_slp_data[current_day, :, :] = my_interp(self.orig_slp_data[current_day, :, :],
+        for current_day in range(total_days):
+            interp_data[current_day, :, :] = my_interp(data_to_interpolate[current_day, :, :],
                                                            self.orig_data_lats,
                                                            self.orig_data_lons,
                                                            consts.interp_resolution,
                                                            consts.interpolation_method)[0]
 
-        for current_day in range(vort_total_days):
-            interp_uwind_data[current_day, :, :] = my_interp(self.orig_uwind_data[current_day, :, :],
-                                                             self.orig_data_lats,
-                                                             self.orig_data_lons,
-                                                             consts.interp_resolution,
-                                                             consts.interpolation_method)[0]
-            interp_vwind_data[current_day, :, :] = my_interp(self.orig_vwind_data[current_day, :, :],
-                                                             self.orig_data_lats,
-                                                             self.orig_data_lons,
-                                                             consts.interp_resolution,
-                                                             consts.interpolation_method)[0]
-
-        return interp_slp_data, interp_uwind_data, interp_vwind_data, interp_data_lats, interp_data_lons
+        return interp_data, interp_data_lats, interp_data_lons
 
     def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots):
+        self.is_interpolated = use_interpolation
+
         # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
         if type(current_day) is int:
             self.current_day = current_day
@@ -126,35 +110,16 @@ class PlotRSTs ():
             return
 
 
-        # Prepare the right data depending on interpolation
-        if use_interpolation:
-            self.is_interpolated = True
-            slp_data = self.interp_slp_data[self.current_day, :, :].squeeze()
-            uwind_data = self.interp_uwind_data[self.current_day, :, :].squeeze()
-            vwind_data = self.interp_vwind_data[self.current_day, :, :].squeeze()
-            total_lat = self.interp_data_lats.shape[0]
-            total_lon = self.interp_data_lons.shape[0]
-            lats = self.interp_data_lats
-            lons = self.interp_data_lons
-        else:
-            self.is_interpolated = False
-            slp_data = self.orig_slp_data[self.current_day, :, :].squeeze()
-            uwind_data = self.orig_uwind_data[self.current_day, :, :].squeeze()
-            vwind_data = self.orig_vwind_data[self.current_day, :, :].squeeze()
-            total_lat = self.orig_data_lats.shape[0]
-            total_lon = self.orig_data_lons.shape[0]
-            lats = self.orig_data_lats
-            lons = self.orig_data_lons
+        # The Vorticity and Geostrophic vorticity need the original data for calculations
+        # and only then will they be interpolated.
+        slp_data = self.orig_slp_data[self.current_day, :, :].squeeze()
+        uwind_data = self.orig_uwind_data[self.current_day, :, :].squeeze()
+        vwind_data = self.orig_vwind_data[self.current_day, :, :].squeeze()
+        total_lat = self.orig_data_lats.shape[0]
+        total_lon = self.orig_data_lons.shape[0]
+        lats = self.orig_data_lats
+        lons = self.orig_data_lons
         resolution = lats[1] - lats[0]
-
-        # Calculate original data resolution for later use
-        orig_data_resolution = self.orig_data_lats[1] - self.orig_data_lats[0]
-
-        # The following maps are needed for displaying the ridges and troughs using blue and red dots
-        if show_dots:
-            self.troughs_map, self.ridges_map = self._calculate_troughs_and_ridges_dots(slp_data, total_lat, total_lon)
-        else:
-            self.troughs_map, self.ridges_map = None, None
 
         # Calculate Vorticity
         if show_vorticity:
@@ -164,9 +129,28 @@ class PlotRSTs ():
 
         # Calculate Geostrophic Vorticity
         if show_geostrophic_vorticity:
-            self.geostrophic_vorticity_map= self._calcualte_geostrophic_vorticity_maps(slp_data, resolution, lats, total_lat, total_lon)
+            # First calculate the map on the original dataset na donly then interpolate it
+            self.geostrophic_vorticity_map = self._calcualte_geostrophic_vorticity_maps(slp_data, resolution, lats, total_lat, total_lon)
         else:
             self.geostrophic_vorticity_map = None
+
+        # For the rest of the calculations (other then vorticity calculations, see above)
+        # the data is interpolated if necessary.
+        if self.is_interpolated:
+            slp_data = self.interp_slp_data[self.current_day, :, :].squeeze()
+            total_lat = self.interp_data_lats.shape[0]
+            total_lon = self.interp_data_lons.shape[0]
+            lats = self.interp_data_lats
+            lons = self.interp_data_lons  # Calculate original data resolution for later use
+            resolution = lats[1] - lats[0]
+
+        orig_data_resolution = self.orig_data_lats[1] - self.orig_data_lats[0]
+
+        # The following maps are needed for displaying the ridges and troughs using blue and red dots
+        if show_dots:
+            self.troughs_map, self.ridges_map = self._calculate_troughs_and_ridges_dots(slp_data, total_lat, total_lon)
+        else:
+            self.troughs_map, self.ridges_map = None, None
 
         # Find Red Sea Trough
         self.trough_coordinates = self._calculate_rst(slp_data, resolution, lats, lons)
@@ -227,6 +211,13 @@ class PlotRSTs ():
                 dx = dy * math.cos(math.radians(lats[current_lat]))
                 vorticity_map[current_lat, current_lon] = (dvwind / dx) - (duwind / dy)
 
+        if self.is_interpolated:
+            vorticity_map = my_interp(vorticity_map,
+                                      self.orig_data_lats,
+                                      self.orig_data_lons,
+                                      consts.interp_resolution,
+                                      consts.interpolation_method)[0]
+
         return vorticity_map
 
     # Calculate Geostrophic vorticity
@@ -236,11 +227,11 @@ class PlotRSTs ():
         geostrophic_vorticity_map = np.zeros((total_lat, total_lon))
         rho = 1.2754
         omega = 7.27e-5
+        dy = 2 * resolution * 111000  # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
         for current_lat in range(1, total_lat - 1):
             for current_lon in range(1, total_lon - 1):
                 dpx = slp_data[current_lat, current_lon + 1] - slp_data[current_lat, current_lon - 1]
                 dpy = slp_data[current_lat + 1, current_lon] - slp_data[current_lat - 1, current_lon]
-                dy = 2 * resolution * 111000 # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
                 dx = dy * math.cos(math.radians(lats[current_lat]))
                 ugwind_map[current_lat, current_lon] = (((-1) / rho) * (dpy / dy)) / (2 * omega * math.sin(math.radians(current_lat)))
                 vgwind_map[current_lat, current_lon] = (((1) / rho) * (dpx / dx)) / (2 * omega * math.sin(math.radians(current_lat)))
@@ -250,6 +241,13 @@ class PlotRSTs ():
                 duwind = ugwind_map[current_lat + 1, current_lon] - ugwind_map[current_lat - 1, current_lon]
                 dvwind = vgwind_map[current_lat, current_lon + 1] - vgwind_map[current_lat, current_lon - 1]
                 geostrophic_vorticity_map[current_lat, current_lon] = (dvwind / dx) - (duwind / dy)
+
+        if self.is_interpolated:
+            geostrophic_vorticity_map = my_interp(geostrophic_vorticity_map,
+                                                  self.orig_data_lats,
+                                                  self.orig_data_lons,
+                                                  consts.interp_resolution,
+                                                  consts.interpolation_method)[0]
 
         return geostrophic_vorticity_map
 
