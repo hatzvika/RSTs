@@ -10,6 +10,7 @@ from python.utils.my_interp import my_interp
 
 class PlotRSTs ():
     def __init__(self, model_data='NCEP'):
+        self.model_data = model_data
 
         # Read the data files
         (self.orig_slp_data,
@@ -412,7 +413,15 @@ class PlotRSTs ():
         rst_map.drawparallels(np.arange(consts.map_lat1, consts.map_lat2, 2.5), labels=[1, 0, 0, 0], fontsize=8)
         rst_map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[0, 0, 0, 1], fontsize=8)
         #map_axis.set(cmap = plt.cm.get_cmap('Blues_r')) #colormap = 'coolwarm',
-        plt.title("Red Sea Troughs")
+
+        # Build map title
+        resolution_str = str(self.orig_data_lats[1] - self.orig_data_lats[0])
+        if self.is_interpolated:
+            is_interpolated_str = 'Interpolated'
+        else:
+            is_interpolated_str = 'Not Interpolated'
+        plot_title = self.model_data + ', Resolution ' + resolution_str + ', ' + is_interpolated_str
+        plt.title(plot_title)
 
         # Calculate the meshes for the maps and plot SLP contours (always)
         lon1_index = int(np.where(lons <= consts.map_lon1)[0][-1])
