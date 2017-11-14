@@ -13,7 +13,7 @@ rst_resolution = 0.5
 interpolation_method = 3
 
 # Number of possible RSTs found in a single map
-max_number_of_RST = 10
+max_number_of_RST = 100
 
 # Number of lat rows to check for the start of an RST
 num_of_RST_start_lats = 5
