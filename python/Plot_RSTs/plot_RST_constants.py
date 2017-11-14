@@ -18,6 +18,11 @@ max_number_of_RST = 10
 # Number of lat rows to check for the start of an RST
 num_of_RST_start_lats = 5
 
+# Which method to use to find the RST.
+# 1 = looking at neghibors at 1.5 degrees continuing north
+# 2 = looking at the non-south neighbor points and going for the highest SLP value
+rst_algorithm = 1
+
 # The coordiantes for the plotted area
 map_lat1 = 20
 map_lat2 = 45

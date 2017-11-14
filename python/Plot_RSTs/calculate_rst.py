@@ -39,6 +39,7 @@ def calculate_rst(slp_data, resolution, lats, lons, method=1):
         # a distance of +/- slp_check_distance.
         maximum_diff = 0
         last_found_point_lon = 0
+        last_found_slp = 0
         for current_lon_index in range(max(slp_check_distance, indexed_rst_lon1),
                                  min(total_lon - slp_check_distance, indexed_rst_lon2 + 1)):
             current_slp = slp_data[indexed_rst_lat1, current_lon_index]
@@ -56,37 +57,42 @@ def calculate_rst(slp_data, resolution, lats, lons, method=1):
         if trough_coords_matrix[0, 0] > 0:
             for current_lat_index in range(indexed_rst_lat1 + 1, indexed_rst_lat2 + 1):
                 maximum_diff = 0
+                next_last_slp = 0
                 for current_lon_index in range(int(max(last_found_point_lon - next_point_search_distance, slp_check_distance)),
                                          int(min(last_found_point_lon + next_point_search_distance, indexed_rst_lon2 + 1))):
                     current_slp = slp_data[current_lat_index, current_lon_index]
                     compared_slp_1 = slp_data[current_lat_index, current_lon_index - slp_check_distance]
                     compared_slp_2 = slp_data[current_lat_index, current_lon_index + slp_check_distance]
-                    if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
+                    if (current_slp < compared_slp_1) and (current_slp < compared_slp_2) and (current_slp > last_found_slp):
                         current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
                         if current_maxima > maximum_diff:
                             trough_coords_matrix[current_lat_index - indexed_rst_lat1, 2*troughs_counter:2*troughs_counter+2] = lats[current_lat_index], lons[current_lon_index]
                             last_found_point_lon = current_lon_index
                             maximum_diff = current_maxima
+                            next_last_slp = current_slp
 
                     if current_lat_index < total_lat:  # Check diagonaly.
                         compared_slp_1 = slp_data[current_lat_index + 1, current_lon_index - slp_check_distance]
                         compared_slp_2 = slp_data[current_lat_index - 1, current_lon_index + slp_check_distance]
-                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
+                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2) and (current_slp > last_found_slp):
                             current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
                             if current_maxima > maximum_diff:
                                 trough_coords_matrix[current_lat_index - indexed_rst_lat1, 2*troughs_counter:2*troughs_counter + 2] = lats[current_lat_index], lons[current_lon_index]
                                 last_found_point_lon = current_lon_index
                                 maximum_diff = current_maxima
+                                next_last_slp = current_slp
 
                         compared_slp_1 = slp_data[current_lat_index - 1, current_lon_index - slp_check_distance]
                         compared_slp_2 = slp_data[current_lat_index + 1, current_lon_index + slp_check_distance]
-                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2):
+                        if (current_slp < compared_slp_1) and (current_slp < compared_slp_2) and (current_slp > last_found_slp):
                             current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_slp)
                             if current_maxima > maximum_diff:
                                 trough_coords_matrix[current_lat_index - indexed_rst_lat1, 2*troughs_counter:2*troughs_counter + 2] = lats[current_lat_index], lons[current_lon_index]
                                 last_found_point_lon = current_lon_index
                                 maximum_diff = current_maxima
+                                next_last_slp = current_slp
 
+                last_found_slp = next_last_slp
                 if maximum_diff == 0:
                     break
 

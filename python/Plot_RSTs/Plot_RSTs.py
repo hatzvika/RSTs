@@ -154,7 +154,7 @@ class PlotRSTs ():
             self.troughs_map, self.ridges_map = None, None
 
         # Find Red Sea Trough
-        self.trough_coordinates_matrix = calculate_rst(slp_data, resolution, lats, lons, method=1)
+        self.trough_coordinates_matrix = calculate_rst(slp_data, resolution, lats, lons, method=consts.rst_algorithm)
 
         # Calculate RST conditions in 3 boxes
         is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
