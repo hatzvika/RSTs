@@ -55,6 +55,11 @@ class PlotRSTs ():
             slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_1985.nc"
             uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
             vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
+        elif model_data == 'ERA Int 2.5':
+            slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_2.5_10-50N_20-50E_full_1985.nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_2.5_850-hPa_10-50N_20-50E_full_1985.nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_2.5_850-hPa_10-50N_20-50E_full_1985.nc"
+
         else:
             print("Wrong model_data name")
             return

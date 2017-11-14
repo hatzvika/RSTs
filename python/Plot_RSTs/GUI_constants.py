@@ -22,7 +22,7 @@ data_options_label = 'Map Options'
 data_to_map_label = 'Data To Map'
 default_data_to_map = 'Geostrophic Vorticity'
 model_data_label = 'Dataset'
-models_list = ['NCEP', 'ERA Interim']
+models_list = ['NCEP', 'ERA Interim', 'ERA Int 2.5']
 default_model_data = models_list[0]
 data_to_map_list = ['Geostrophic Vorticity', 'Vorticity']
 
