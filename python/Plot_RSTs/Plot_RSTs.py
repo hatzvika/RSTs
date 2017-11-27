@@ -356,7 +356,9 @@ class PlotRSTs ():
         mesh_lons, mesh_lats = np.meshgrid(lons[lon1_index:lon2_index + 1], lats[lat1_index:lat2_index + 1])
 
         x, y = rst_map(mesh_lons, mesh_lats)
-        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], 15, linewidths=1.5, colors='k')
+        min_slp = int(np.floor(slp_data.min()))
+        max_slp = int(np.ceil(slp_data.max()))
+        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], range(min_slp, max_slp, 200), linewidths=1.5, colors='k')
 
         # Prepare the selected subsetmap
         subset_map = None
@@ -450,22 +452,26 @@ class PlotRSTs ():
 
             # Add the points value
             if (self.geostrophic_vorticity_map is not None) and (self.is_interpolated):
-                data_string = "1st point: " + str(('%.2E' % self.geostrophic_vorticity_map[4, 6]))\
-                              +"  2nd point: " + str(('%.2E' % self.geostrophic_vorticity_map[3, 6]))
-                x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)
-                plt.text(x_dot, y_dot, data_string, fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+                # data_string = "1st point: " + str(('%.2E' % self.geostrophic_vorticity_map[4, 6]))\
+                #               +"  2nd point: " + str(('%.2E' % self.geostrophic_vorticity_map[3, 6]))
+                # x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)
+                # plt.text(x_dot, y_dot, data_string, fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
 
                 # Add a note for met rst conditions
-                x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
+                x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)
                 if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
-                    plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+                    # plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+                    plt.text(x_dot, y_dot, 'Conditions met', fontsize=consts.map_text_fontsize, color = 'green', weight = 'bold',
+                             bbox=dict(facecolor="white", alpha=0.8))
                 else:
-                    plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+                    # plt.text(x_dot, y_dot, 'RST square conditions not met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+                    plt.text(x_dot, y_dot, 'Conditions not met', fontsize=consts.map_text_fontsize, color = 'red', weight = 'bold',
+                             bbox=dict(facecolor="white", alpha=0.8))
 
         # Add the date
         x_dot, y_dot = rst_map(consts.map_lon1+1, consts.map_lat2-1)
         current_date = self.data_string_time[self.current_day]
-        plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
+        plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize, weight = 'bold', bbox=dict(facecolor="white", alpha=0.8))
 
 
 
