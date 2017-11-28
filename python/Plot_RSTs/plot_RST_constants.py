@@ -4,10 +4,12 @@
 raw_data_prefix = "Sample Data/"
 
 # The interpolation resolution of the maps' data (not for the find_torugh method)
-interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
+#interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for
+interp_resolution = 1  # This is the interpolated resolution(degrees) we aim for
 
 # The interpolation resolution for finding the RST coordinates
 rst_resolution = 0.5
+#rst_resolution = 1
 
 # Interpolation_method: 0 = nearest-neighbor interpolation, 1 = bilinear interpolation, 3 = cublic spline
 interpolation_method = 3
@@ -17,11 +19,6 @@ max_number_of_RST = 100
 
 # Number of lat rows to check for the start of an RST
 num_of_RST_start_lats = 5
-
-# Which method to use to find the RST.
-# 1 = looking at neghibors at 1.5 degrees continuing north
-# 2 = looking at the non-south neighbor points and going for the highest SLP value
-rst_algorithm = 1
 
 # The coordiantes for the plotted area
 map_lat1 = 20
