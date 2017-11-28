@@ -7,7 +7,7 @@ from mpl_toolkits.basemap import Basemap
 import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
-from python.Plot_RSTs.calculate_rst import calculate_rst
+from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
 class PlotRSTs ():
     def __init__(self, model_data='NCEP'):
@@ -159,7 +159,8 @@ class PlotRSTs ():
             self.troughs_map, self.ridges_map = None, None
 
         # Find Red Sea Trough
-        self.trough_coordinates_matrix = calculate_rst(slp_data, resolution, lats, lons)
+        calc_rst_obj = Calculate_RST(slp_data, resolution, consts.slp_check_distance, lats, lons)
+        self.trough_coordinates_matrix = calc_rst_obj.get_trough_coords_matrix(longest_only=consts.longest_only)
 
         # Calculate RST conditions in 3 boxes
         is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
@@ -385,7 +386,7 @@ class PlotRSTs ():
             plt.colorbar(cs)
 
         # Draw the RSTs, if any
-        for current_RST in range(consts.max_number_of_RST):
+        for current_RST in range(0, int(np.size(self.trough_coordinates_matrix, 1)/2)):
             # Get the current trough columns from the trough matrix
             trough_coords = self.trough_coordinates_matrix[:, 2*current_RST:2*current_RST+2]
             # remove all zeros from current RST
