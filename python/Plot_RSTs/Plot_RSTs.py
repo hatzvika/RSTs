@@ -10,7 +10,7 @@ from python.utils.my_interp import my_interp
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
 class PlotRSTs ():
-    def __init__(self, model_data='NCEP'):
+    def __init__(self, model_data='NCEP', data_year=1984):
         self.model_data = model_data
 
         # Read the data files
@@ -20,7 +20,7 @@ class PlotRSTs ():
          self.orig_data_lats,
          self.orig_data_lons,
          self.data_time,
-         self.data_string_time) = self._read_files(model_data)
+         self.data_string_time) = self._read_files(model_data, data_year)
 
         # Interpolate the data. All the data is interpolated and the
         # decision on which data to use is left outside the class
@@ -46,19 +46,19 @@ class PlotRSTs ():
         self.mean_geos_vort_square3 = None
 
     # Read the data files
-    def _read_files(self, model_data):
+    def _read_files(self, model_data, data_year):
         if model_data == 'NCEP':
-            slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_1985.nc"
-            uwind_filename = consts.raw_data_prefix + "uwind/uwind_NCEP_10-50N_20-50E_full_1985.nc"
-            vwind_filename = consts.raw_data_prefix + "vwind/vwind_NCEP_10-50N_20-50E_full_1985.nc"
+            slp_filename = consts.raw_data_prefix + "SLP/SLP_NCEP_10-50N_20-50E_full_" + str(data_year) + ".nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_NCEP_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_NCEP_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
         elif model_data == 'ERA_Interim':
-            slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_1985.nc"
-            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
-            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_85-hPa_10-50N_20-50E_full_1985.nc"
+            slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_10-50N_20-50E_full_" + str(data_year) + ".nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
         elif model_data == 'ERA Int 2.5':
             slp_filename = consts.raw_data_prefix + "SLP/SLP_ERA_Int_2.5_10-50N_20-50E_full_1985.nc"
-            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_2.5_850-hPa_10-50N_20-50E_full_1985.nc"
-            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_2.5_850-hPa_10-50N_20-50E_full_1985.nc"
+            uwind_filename = consts.raw_data_prefix + "uwind/uwind_ERA_Int_2.5_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
+            vwind_filename = consts.raw_data_prefix + "vwind/vwind_ERA_Int_2.5_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
 
         else:
             print("Wrong model_data name")

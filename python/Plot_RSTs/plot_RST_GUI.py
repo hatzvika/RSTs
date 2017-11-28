@@ -18,10 +18,6 @@ else:
 
 class plot_RST_GUI:
     def __init__(self, master):
-        self.plotRSTs_NCEP_instance = PlotRSTs('NCEP')
-        self.plotRSTs_ERA_instance = PlotRSTs('ERA_Interim')
-        self.plotRSTs_ERA_25_instance = PlotRSTs('ERA Int 2.5')
-
         # create a custom font
         self.customFont = tkFont.Font(family="Helvetica", size=const_GUI.default_font_size)
 
@@ -100,12 +96,13 @@ class plot_RST_GUI:
         self.year_label = tk.Label(self.frame_general_attributes, text=const_GUI.year_label, font=self.customFont)
         self.month_label = tk.Label(self.frame_general_attributes, text=const_GUI.month_label, font=self.customFont)
         self.day_label = tk.Label(self.frame_general_attributes, text=const_GUI.day_label, font=self.customFont)
-        self.year_list = [str(x) for x in range(1996, 2017)]
+        # self.year_list = [str(x) for x in range(1996, 2017)]
+        self.year_list = ["1985", "1994"]
         self.year_var = tk.StringVar()
         self.year_var.set(const_GUI.default_year)
         self.year_entry = tk.OptionMenu(self.frame_general_attributes, self.year_var, *self.year_list)
         self.year_entry.config(font=self.customFont)
-        self.year_entry.configure(state="disabled")
+        # self.year_entry.configure(state="disabled")
         self.month_list = ["%02d" % x for x in range(1, 13)]
         self.month_var = tk.StringVar()
         self.month_var.set(const_GUI.default_month)
@@ -199,6 +196,12 @@ class plot_RST_GUI:
         self.choose_cb_label.grid(row=2, column=0, columnspan=3)
         self.cb_menu.grid(row=3, column=0, columnspan=3)
 
+        # Initialize the plotRSTs objects according to the default year
+        self.current_year = const_GUI.default_year
+        self.plotRSTs_NCEP_instance = PlotRSTs('NCEP', self.current_year)
+        self.plotRSTs_ERA_instance = PlotRSTs('ERA_Interim', self.current_year)
+        self.plotRSTs_ERA_25_instance = PlotRSTs('ERA Int 2.5', self.current_year)
+
         root.mainloop()
 
     def show_prev_day(self):
@@ -245,6 +248,13 @@ class plot_RST_GUI:
         self.customFont.configure(size=const_GUI.default_font_size)
 
     def draw_map(self):
+        if self.year_var.get() != self.current_year:
+            # Replace the plotRSTs objects according to the current year
+            self.current_year = self.year_var.get()
+            self.plotRSTs_NCEP_instance = PlotRSTs('NCEP', self.current_year)
+            self.plotRSTs_ERA_instance = PlotRSTs('ERA_Interim', self.current_year)
+            self.plotRSTs_ERA_25_instance = PlotRSTs('ERA Int 2.5', self.current_year)
+
         # The first part is completely done by matplotlib, and then transferred to Tkinter
         current_day = self.year_var.get() + "-" + self.month_var.get() + "-" + self.day_var.get() + " 12:00:00"
 
