@@ -79,17 +79,25 @@ class plot_RST_GUI:
                                                         text=const_GUI.data_options_3,
                                                         variable=self.show_rst_info,
                                                         font=self.customFont)
+        # 'Polyfit RST'
+        self.polyfit_rst = tk.IntVar()
+        self.polyfit_rst.set(const_GUI.default_polyfit_rst)
+        self.checkbutton4_data_options = tk.Checkbutton(self.frame_data_options,
+                                                        text=const_GUI.data_options_4,
+                                                        variable=self.polyfit_rst,
+                                                        font=self.customFont)
 
         # Define the data options widget's layout (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
         #                                          4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
-        self.data_options_label.grid(row=0, column=0)
+        self.data_options_label.grid(row=0, column=0, columnspan=2)
         self.model_data_label.grid(row=1, column=0, sticky=tk.W)
         self.model_data_entry.grid(row=2, column=0, sticky=tk.W)
         self.data_to_map_label.grid(row=3, column=0, sticky=tk.W)
         self.data_to_map_entry.grid(row=4, column=0, sticky=tk.W)
-        self.checkbutton1_data_options.grid(row=5, column=0, sticky=tk.W)
-        self.checkbutton2_data_options.grid(row=6, column=0, sticky=tk.W)
-        self.checkbutton3_data_options.grid(row=7, column=0, sticky=tk.W)
+        self.checkbutton1_data_options.grid(row=1, column=1, sticky=tk.W)
+        self.checkbutton2_data_options.grid(row=2, column=1, sticky=tk.W)
+        self.checkbutton3_data_options.grid(row=3, column=1, sticky=tk.W)
+        self.checkbutton4_data_options.grid(row=4, column=1, sticky=tk.W)
 
         # Define the general attributes widgets
         self.date_label = tk.Label(self.frame_general_attributes, text=const_GUI.date_label, font=self.customFont)
@@ -270,7 +278,8 @@ class plot_RST_GUI:
                                                                                    show_dots=self.show_dots.get())
             rst_map = self.plotRSTs_NCEP_instance.create_map(map_axis,
                                                              show_rst_info=self.show_rst_info.get(),
-                                                             req_colormap=self.cb_var.get())
+                                                             req_colormap=self.cb_var.get(),
+                                                             polyfit_rst=self.polyfit_rst.get())
         elif self.model_data_var.get() == const_GUI.models_list[1]:
             # Plot the ERA Interim model data
             is_rst_condition_met = self.plotRSTs_ERA_instance.calculate_maps_data(current_day,
@@ -279,7 +288,8 @@ class plot_RST_GUI:
                                                                                   show_dots=self.show_dots.get())
             rst_map = self.plotRSTs_ERA_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
-                                                            req_colormap=self.cb_var.get())
+                                                            req_colormap=self.cb_var.get(),
+                                                            polyfit_rst=self.polyfit_rst.get())
         elif self.model_data_var.get() == const_GUI.models_list[2]:
             # Plot the ERA Interim 2.5 degrees model data
             is_rst_condition_met = self.plotRSTs_ERA_25_instance.calculate_maps_data(current_day,
@@ -288,7 +298,8 @@ class plot_RST_GUI:
                                                                                   show_dots=self.show_dots.get())
             rst_map = self.plotRSTs_ERA_25_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
-                                                            req_colormap=self.cb_var.get())
+                                                            req_colormap=self.cb_var.get(),
+                                                            polyfit_rst=self.polyfit_rst.get())
 
 
         if self.detached_map.get() == 0:

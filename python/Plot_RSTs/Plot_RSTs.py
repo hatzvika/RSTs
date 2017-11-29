@@ -308,7 +308,7 @@ class PlotRSTs ():
         return is_rst_condition_met
 
     # This function will create the map according to the flags sent in the previous calculate_maps_data method call
-    def create_map(self, map_axis, show_rst_info, req_colormap):
+    def create_map(self, map_axis, show_rst_info, req_colormap, polyfit_rst):
         if self.is_interpolated is None:
             print("Use the calculate_maps_data method before calling create_map")
             return
@@ -391,11 +391,17 @@ class PlotRSTs ():
             trough_coords = self.trough_coordinates_matrix[:, 2*current_RST:2*current_RST+2]
             # remove all zeros from current RST
             trough_coords = trough_coords[~(trough_coords == 0).all(1)]
-
-
             x_trough, y_trough = rst_map(trough_coords[:, 1], trough_coords[:, 0])
-            rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
-            rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
+
+            if polyfit_rst:
+                z = np.polyfit(y_trough, x_trough, 3) # I invert trhe x and y because of the trough shape from south to north
+                p = np.poly1d(z)
+                latp = np.linspace(y_trough[0], y_trough[-1], 100)
+                rst_map.plot(p(latp), latp, marker=None, linewidth = 6, color='black')
+                rst_map.plot(p(latp), latp, marker=None, linewidth=4, color='yellow')
+            else:
+                rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
+                rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
