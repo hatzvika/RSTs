@@ -104,8 +104,8 @@ class plot_RST_GUI:
         self.year_label = tk.Label(self.frame_general_attributes, text=const_GUI.year_label, font=self.customFont)
         self.month_label = tk.Label(self.frame_general_attributes, text=const_GUI.month_label, font=self.customFont)
         self.day_label = tk.Label(self.frame_general_attributes, text=const_GUI.day_label, font=self.customFont)
-        # self.year_list = [str(x) for x in range(1996, 2017)]
-        self.year_list = ["1985", "1994"]
+        self.year_list = [str(x) for x in range(1979, 2017)]
+        #self.year_list = ["1979", "1985", "1994"]
         self.year_var = tk.StringVar()
         self.year_var.set(const_GUI.default_year)
         self.year_entry = tk.OptionMenu(self.frame_general_attributes, self.year_var, *self.year_list)
