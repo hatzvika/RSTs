@@ -93,7 +93,7 @@ class PlotRSTs ():
 
         return interp_data, interp_data_lats, interp_data_lons
 
-    def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots):
+    def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots, only_longest_separate):
         self.is_interpolated = use_interpolation
 
         # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
@@ -161,7 +161,7 @@ class PlotRSTs ():
 
         # Find Red Sea Trough
         calc_rst_obj = Calculate_RST(slp_data, resolution, consts.slp_check_distance, lats, lons)
-        self.trough_coordinates_matrix = calc_rst_obj.get_trough_coords_matrix(only_long_separate_RSTs=consts.only_long_separate_RSTs)
+        self.trough_coordinates_matrix = calc_rst_obj.get_trough_coords_matrix(only_longest_separate)
 
         # Calculate RST conditions in 3 boxes
         is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
@@ -395,18 +395,16 @@ class PlotRSTs ():
             x_trough, y_trough = rst_map(trough_coords[:, 1], trough_coords[:, 0])
 
             if polyfit_rst:
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('error')
-                    try:
-                        z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
-                        p = np.poly1d(z)
-                        latp = np.linspace(y_trough[0], y_trough[-1], 100)
-                        rst_map.plot(p(latp), latp, marker=None, linewidth=6, color='black')
-                        rst_map.plot(p(latp), latp, marker=None, linewidth=4, color='yellow')
-                    except np.RankWarning:
-                        print("not enought data")
-                        rst_map.plot(x_trough, y_trough, marker=None, linewidth=6, color='black')
-                        rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
+                try:
+                    z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
+                    p = np.poly1d(z)
+                    latp = np.linspace(y_trough[0], y_trough[-1], 100)
+                    rst_map.plot(p(latp), latp, marker=None, linewidth=6, color='black')
+                    rst_map.plot(p(latp), latp, marker=None, linewidth=4, color='yellow')
+                except:
+                    print("can't polyfit")
+                    rst_map.plot(x_trough, y_trough, marker=None, linewidth=6, color='black')
+                    rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
             else:
                 rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
                 rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')

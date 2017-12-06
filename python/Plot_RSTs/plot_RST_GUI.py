@@ -87,6 +87,14 @@ class plot_RST_GUI:
                                                         variable=self.polyfit_rst,
                                                         font=self.customFont)
 
+        # 'Show only longest separate'
+        self.only_longest_separate = tk.IntVar()
+        self.only_longest_separate.set(const_GUI.default_only_longest_separate)
+        self.checkbutton5_data_options = tk.Checkbutton(self.frame_data_options,
+                                                        text=const_GUI.data_options_5,
+                                                        variable=self.only_longest_separate,
+                                                        font=self.customFont)
+
         # Define the data options widget's layout (1 = 'Use interpolation', 2 = 'Show vorticity', 3 = 'Show geostrophic vorticity',
         #                                          4 = 'Show troughs/ridges dots', 5 = 'Show RST info')
         self.data_options_label.grid(row=0, column=0, columnspan=2)
@@ -98,6 +106,7 @@ class plot_RST_GUI:
         self.checkbutton2_data_options.grid(row=2, column=1, sticky=tk.W)
         self.checkbutton3_data_options.grid(row=3, column=1, sticky=tk.W)
         self.checkbutton4_data_options.grid(row=4, column=1, sticky=tk.W)
+        self.checkbutton5_data_options.grid(row=5, column=1, sticky=tk.W)
 
         # Define the general attributes widgets
         self.date_label = tk.Label(self.frame_general_attributes, text=const_GUI.date_label, font=self.customFont)
@@ -275,7 +284,8 @@ class plot_RST_GUI:
             is_rst_condition_met = self.plotRSTs_NCEP_instance.calculate_maps_data(current_day,
                                                                                    use_interpolation=self.use_interpolation.get(),
                                                                                    data_to_map=self.data_to_map_var.get(),
-                                                                                   show_dots=self.show_dots.get())
+                                                                                   show_dots=self.show_dots.get(),
+                                                                                   only_longest_separate=self.only_longest_separate.get())
             rst_map = self.plotRSTs_NCEP_instance.create_map(map_axis,
                                                              show_rst_info=self.show_rst_info.get(),
                                                              req_colormap=self.cb_var.get(),
@@ -285,22 +295,24 @@ class plot_RST_GUI:
             is_rst_condition_met = self.plotRSTs_ERA_instance.calculate_maps_data(current_day,
                                                                                   use_interpolation=self.use_interpolation.get(),
                                                                                   data_to_map=self.data_to_map_var.get(),
-                                                                                  show_dots=self.show_dots.get())
+                                                                                  show_dots=self.show_dots.get(),
+                                                                                  only_longest_separate=self.only_longest_separate.get())
             rst_map = self.plotRSTs_ERA_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
                                                             req_colormap=self.cb_var.get(),
                                                             polyfit_rst=self.polyfit_rst.get())
+
         elif self.model_data_var.get() == const_GUI.models_list[2]:
             # Plot the ERA Interim 2.5 degrees model data
             is_rst_condition_met = self.plotRSTs_ERA_25_instance.calculate_maps_data(current_day,
-                                                                                  use_interpolation=self.use_interpolation.get(),
-                                                                                  data_to_map=self.data_to_map_var.get(),
-                                                                                  show_dots=self.show_dots.get())
+                                                                                     use_interpolation=self.use_interpolation.get(),
+                                                                                     data_to_map=self.data_to_map_var.get(),
+                                                                                     show_dots=self.show_dots.get(),
+                                                                                     only_longest_separate=self.only_longest_separate.get())
             rst_map = self.plotRSTs_ERA_25_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
                                                             req_colormap=self.cb_var.get(),
                                                             polyfit_rst=self.polyfit_rst.get())
-
 
         if self.detached_map.get() == 0:
             # The map is drawn inside the current GUI

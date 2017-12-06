@@ -8,11 +8,12 @@ default_show_vorticity = False
 default_show_geostrophic_vorticity = True
 default_show_dots = False
 default_show_rst_info = True
-default_polyfit_rst = False
+default_polyfit_rst = True
+default_only_longest_separate = True
 default_file_path = "C:/Users/hatzv/Documents/Geography/Research_help/Pinhas synoptic classification/New_classification_algorithm/Raw_data/"
-default_year = "1985"
-default_month = "05"
-default_day = "01"
+default_year = "1994"
+default_month = "10"
+default_day = "03"
 
 default_font_size = 12
 
@@ -31,6 +32,7 @@ data_options_1 = 'Use interpolation'
 data_options_2 = 'Show troughs/ridges dots'
 data_options_3 = 'Show RST info'
 data_options_4 = 'Polyfit RST'
+data_options_5 = 'Show only longest separate'
 
 cross_section_label = 'General Options'
 
