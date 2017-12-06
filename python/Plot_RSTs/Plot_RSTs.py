@@ -446,22 +446,26 @@ class PlotRSTs ():
             rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
             if self.is_interpolated:
                 x_mark, y_mark = rst_map(35,30)
-                rst_map.plot(x_mark,
-                             y_mark,
-                             marker='o',
-                             fillstyle = 'full',
-                             color='white',
-                             markeredgecolor='black',
-                             markersize=10)
+                # rst_map.plot(x_mark,
+                #              y_mark,
+                #              marker='o',
+                #              fillstyle = 'full',
+                #              color='white',
+                #              markeredgecolor='black',
+                #              markersize=10)
 
                 x_mark, y_mark = rst_map(35,32.5)
-                rst_map.plot(x_mark,
-                             y_mark,
-                             marker='o',
-                             fillstyle = 'full',
-                             color='white',
-                             markeredgecolor='black',
-                             markersize=10)
+                # rst_map.plot(x_mark,
+                #              y_mark,
+                #              marker='o',
+                #              fillstyle = 'full',
+                #              color='white',
+                #              markeredgecolor='black',
+                #              markersize=10)
+            # Draw line at 35E
+            x_line, y_line = rst_map([35, 35], [30, 33.5])
+            rst_map.plot(x_line, y_line, marker=None, linewidth=6, color='black')
+            rst_map.plot(x_line, y_line, marker=None, linewidth=3, color='red')
 
             # Add the points value
             if (self.geostrophic_vorticity_map is not None) and (self.is_interpolated):

@@ -23,6 +23,7 @@ num_of_RST_start_lats = 5
 
 # Get only long RSTs, or all of them
 RST_length_threshold = 4/rst_resolution # In grid points. 4 degress ~= 400Km. The number of points depends on the interp resolution
+# RST_length_threshold = 0/rst_resolution # In grid points. 4 degress ~= 400Km. The number of points depends on the interp resolution
 
 # The coordiantes for the plotted area
 map_lat1 = 20
@@ -48,7 +49,7 @@ rst_square2_lon1 = 33
 rst_square2_lon2 = 37
 
 rst_square3_lat1 = 29
-rst_square3_lat2 = 33
+rst_square3_lat2 = 33.5
 rst_square3_lon1 = 32.5
 rst_square3_lon2 = 37.5
 
