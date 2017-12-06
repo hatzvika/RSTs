@@ -21,8 +21,9 @@ max_number_of_RST = 100
 # Number of lat rows to check for the start of an RST
 num_of_RST_start_lats = 5
 
-# Get only the longest RST, or all of them
-longest_only = True
+# Get only long RSTs, or all of them
+only_long_separate_RSTs = True
+RST_length_threshold = 4/rst_resolution # In grid points. 4 degress ~= 400Km. The number of points depends on the interp resolution
 
 # The coordiantes for the plotted area
 map_lat1 = 20

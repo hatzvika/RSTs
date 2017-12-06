@@ -60,19 +60,30 @@ class Calculate_RST:
         self.trough_coords_matrix = np.zeros((self.total_lat*3, consts.max_number_of_RST*2)) # *3 because the algorithm allows goind sideways as well.
         self._find_all_rsts()
 
-    def get_trough_coords_matrix(self, longest_only=False):
-        if longest_only:
+    def get_trough_coords_matrix(self, only_long_separate_RSTs=False):
+        if only_long_separate_RSTs:
+            # Get all RSTs which are longer than a threshold. If none found, get the longest possible.
             longest = 0
             longest_matrix = []
+            long_RSTs_counter = 0
+            long_RSTs_matrix = np.zeros((self.total_lat*3, consts.max_number_of_RST*2))
             for current_RST in range(self.troughs_counter):
                 # Get the current trough columns from the trough matrix
                 trough_coords = self.trough_coords_matrix[:, 2*current_RST:2*current_RST+2]
                 # remove all zeros from current RST
                 trough_coords = trough_coords[~(trough_coords == 0).all(1)]
-                if np.size(trough_coords, 0) > longest:
-                    longest = np.size(trough_coords, 0)
+                trough_length = np.size(trough_coords, 0)
+                if trough_length > longest:
+                    longest = trough_length
                     longest_matrix = trough_coords
-            self.trough_coords_matrix = longest_matrix
+                if trough_length >= consts.RST_length_threshold:
+                    long_RSTs_matrix[0:trough_length, long_RSTs_counter*2:long_RSTs_counter*2+2] = trough_coords
+                    long_RSTs_counter = long_RSTs_counter + 1
+            if long_RSTs_counter == 0:
+                self.trough_coords_matrix = longest_matrix
+            else:
+                self.trough_coords_matrix = long_RSTs_matrix[:, 0:long_RSTs_counter*2]
+                self._leave_only_separate_troughs()
 
         return self.trough_coords_matrix
 
@@ -152,3 +163,61 @@ class Calculate_RST:
             #             (current_lon_index == max(self.slp_check_distance, self.indexed_rst_lon1)) or \
             #             (current_lon_index == min(self.total_lon - self.slp_check_distance, self.indexed_rst_lon2 + 1)):
             #         trough_end = True
+
+    def _leave_only_separate_troughs(self):
+        # This function removes converging troughs, leaving only the longest troughs.
+        # If two troughs converge and have the same length, the one with a lower SLP is chosen.
+        current_valid_troughs_counter = 0
+        while (2 * current_valid_troughs_counter) < np.size(self.trough_coords_matrix, 1):
+            # Get tested trough
+            tested_trough = self.trough_coords_matrix[:, current_valid_troughs_counter*2:current_valid_troughs_counter*2+2]
+            # remove all zeros from tested trough
+            tested_trough = tested_trough[~(tested_trough == 0).all(1)]
+            other_trough_index = current_valid_troughs_counter + 1
+            while (2 * other_trough_index) < np.size(self.trough_coords_matrix, 1):
+                other_trough = self.trough_coords_matrix[:, other_trough_index*2:other_trough_index*2+2]
+                # remove all zeros from other trough
+                other_trough = other_trough[~(other_trough == 0).all(1)]
+
+                # Compare tested and other troughs
+                is_different = True
+                tested_trough_length = np.size(tested_trough,0)
+                other_trough_length = np.size(other_trough,0)
+                for tested_point_index in range(tested_trough_length):
+                    tested_point_lat = tested_trough[tested_point_index, 0]
+                    tested_point_lon = tested_trough[tested_point_index, 1]
+                    for other_point_index in range (other_trough_length):
+                        other_point_lat = other_trough[other_point_index, 0]
+                        other_point_lon = other_trough[other_point_index, 1]
+                        if (tested_point_lat == other_point_lat) and (tested_point_lon == other_point_lon):
+                            is_different = False
+                            break
+                    if not is_different:
+                        break
+
+                if not is_different:
+                    if other_trough_length > tested_trough_length:
+                        tested_trough = other_trough
+                        self.trough_coords_matrix[:, current_valid_troughs_counter * 2:current_valid_troughs_counter * 2 + 2] = \
+                            self.trough_coords_matrix[:, other_trough_index * 2:other_trough_index * 2 + 2]
+                    # elif other_trough_length == tested_trough_length:
+                    #     multiplier = 1 / consts.rst_resolution
+                    #     tested_starting_lat_index = int(tested_trough[0,0] * multiplier)
+                    #     tested_starting_lon_index = int(tested_trough[0,1] * multiplier)
+                    #     other_starting_lat_index = int(other_trough[0,0] * multiplier)
+                    #     other_starting_lon_index = int(other_trough[0,1] * multiplier)
+                    #     tested_starting_slp = self.slp_data[tested_starting_lat_index, tested_starting_lon_index]
+                    #     other_starting_slp = self.slp_data[other_starting_lat_index, other_starting_lon_index]
+                    #     if other_starting_slp < tested_starting_slp:
+                    #         self.trough_coords_matrix[current_valid_troughs_counter * 2, current_valid_troughs_counter * 2 + 1] = \
+                    #             self.trough_coords_matrix[other_trough_index * 2, other_trough_index * 2 + 1]
+
+                    self.trough_coords_matrix = np.delete(self.trough_coords_matrix, other_trough_index * 2 + 1, 1)
+                    self.trough_coords_matrix = np.delete(self.trough_coords_matrix, other_trough_index * 2, 1)
+                else:
+                    other_trough_index = other_trough_index + 1
+
+            current_valid_troughs_counter = current_valid_troughs_counter + 1
+
+
+
