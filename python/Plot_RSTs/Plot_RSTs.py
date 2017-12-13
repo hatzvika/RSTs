@@ -387,27 +387,37 @@ class PlotRSTs ():
             plt.colorbar(cs)
 
         # Draw the RSTs, if any
+        rst_orientation_str =""
         for current_RST in range(0, int(np.size(self.trough_coordinates_matrix, 1)/2)):
             # Get the current trough columns from the trough matrix
             trough_coords = self.trough_coordinates_matrix[:, 2*current_RST:2*current_RST+2]
             # remove all zeros from current RST
             trough_coords = trough_coords[~(trough_coords == 0).all(1)]
-            x_trough, y_trough = rst_map(trough_coords[:, 1], trough_coords[:, 0])
+            x_trough = trough_coords[:, 1]
+            y_trough = trough_coords[:, 0]
 
             if polyfit_rst:
                 try:
                     z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
                     p = np.poly1d(z)
                     latp = np.linspace(y_trough[0], y_trough[-1], 100)
-                    rst_map.plot(p(latp), latp, marker=None, linewidth=6, color='black')
-                    rst_map.plot(p(latp), latp, marker=None, linewidth=4, color='yellow')
+                    x_trough = p(latp)
+                    y_trough = latp
                 except:
                     print("can't polyfit")
-                    rst_map.plot(x_trough, y_trough, marker=None, linewidth=6, color='black')
-                    rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
-            else:
-                rst_map.plot(x_trough, y_trough, marker=None, linewidth = 6, color='black')
-                rst_map.plot(x_trough, y_trough, marker=None, linewidth=4, color='yellow')
+            lat_map, lon_map = rst_map(x_trough, y_trough)
+            rst_map.plot(lat_map, lon_map, marker=None, linewidth = 6, color='black')
+            rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
+
+            # Find the orientation of the RST
+            rst_orientation_str = rst_orientation_str + self._Check_RST_orientation(x_trough, y_trough) + ", "
+
+        # Print the orientation results of all found RSTs
+        if rst_orientation_str != "":
+            rst_orientation_str = rst_orientation_str[:-2]
+            x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
+            plt.text(x_dot, y_dot, 'Orientations: ' + rst_orientation_str, fontsize=consts.map_text_fontsize, color='black', weight='bold',
+                         bbox=dict(facecolor="white", alpha=0.8))
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
@@ -444,26 +454,8 @@ class PlotRSTs ():
                                 consts.rst_square3_lon1]
             x_region, y_region = rst_map(lon_array_region, lat_array_region)
             rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
-            if self.is_interpolated:
-                x_mark, y_mark = rst_map(35,30)
-                # rst_map.plot(x_mark,
-                #              y_mark,
-                #              marker='o',
-                #              fillstyle = 'full',
-                #              color='white',
-                #              markeredgecolor='black',
-                #              markersize=10)
 
-                x_mark, y_mark = rst_map(35,32.5)
-                # rst_map.plot(x_mark,
-                #              y_mark,
-                #              marker='o',
-                #              fillstyle = 'full',
-                #              color='white',
-                #              markeredgecolor='black',
-                #              markersize=10)
-            # Draw line at 35E
-            x_line, y_line = rst_map([35, 35], [30, 33.5])
+            x_line, y_line = rst_map([consts.central_cross_line_lon, consts.central_cross_line_lon], [consts.central_cross_line_lat1, consts.central_cross_line_lat2])
             rst_map.plot(x_line, y_line, marker=None, linewidth=6, color='black')
             rst_map.plot(x_line, y_line, marker=None, linewidth=3, color='red')
 
@@ -493,6 +485,26 @@ class PlotRSTs ():
 
 
         return rst_map
+
+    def _Check_RST_orientation(self, x_trough, y_trough):
+        east = False
+        west = False
+        for current_index in range(np.size(x_trough, 0)):
+            current_lat = y_trough[current_index]
+            current_lon = x_trough[current_index]
+            if current_lat >= consts.rst_square3_lat1 and current_lat <= consts.rst_square3_lat2:
+                if current_lon >= consts.rst_square3_lon1 and current_lon <= consts.central_cross_line_lon:
+                    west = True
+                if current_lon >= consts.central_cross_line_lon and current_lon <= consts.rst_square3_lon2:
+                    east = True
+        if west and east:
+            return consts.rst_orientation_central
+        elif east:
+            return consts.rst_orientation_east
+        elif west:
+            return consts.rst_orientation_west
+        else:
+            return consts.rst_orientation_no_rst
 
     # return the prev day string date and next day string date for the Next/Prev days buttons in the GUI
     def get_next_and_prev_days(self, current_date):

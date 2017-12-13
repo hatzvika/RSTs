@@ -53,6 +53,17 @@ rst_square3_lat2 = 33.5
 rst_square3_lon1 = 32.5
 rst_square3_lon2 = 37.5
 
+# The coordinates for the central RST crossing line
+central_cross_line_lon = 35
+central_cross_line_lat1 = 30
+central_cross_line_lat2 = 33.5
+
 map_text_fontsize = 12
+
+#RST orientation enum
+rst_orientation_no_rst = "No RST"
+rst_orientation_east = "East"
+rst_orientation_west = "West"
+rst_orientation_central = "Central"
 
 
