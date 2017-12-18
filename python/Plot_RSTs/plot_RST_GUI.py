@@ -285,22 +285,22 @@ class plot_RST_GUI:
                                                                                    use_interpolation=self.use_interpolation.get(),
                                                                                    data_to_map=self.data_to_map_var.get(),
                                                                                    show_dots=self.show_dots.get(),
-                                                                                   only_longest_separate=self.only_longest_separate.get())
+                                                                                   only_longest_separate=self.only_longest_separate.get(),
+                                                                                   polyfit_rst=self.polyfit_rst.get())
             rst_map = self.plotRSTs_NCEP_instance.create_map(map_axis,
                                                              show_rst_info=self.show_rst_info.get(),
-                                                             req_colormap=self.cb_var.get(),
-                                                             polyfit_rst=self.polyfit_rst.get())
+                                                             req_colormap=self.cb_var.get())
         elif self.model_data_var.get() == const_GUI.models_list[1]:
             # Plot the ERA Interim model data
             is_rst_condition_met = self.plotRSTs_ERA_instance.calculate_maps_data(current_day,
                                                                                   use_interpolation=self.use_interpolation.get(),
                                                                                   data_to_map=self.data_to_map_var.get(),
                                                                                   show_dots=self.show_dots.get(),
-                                                                                  only_longest_separate=self.only_longest_separate.get())
+                                                                                  only_longest_separate=self.only_longest_separate.get(),
+                                                                                  polyfit_rst=self.polyfit_rst.get())
             rst_map = self.plotRSTs_ERA_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
-                                                            req_colormap=self.cb_var.get(),
-                                                            polyfit_rst=self.polyfit_rst.get())
+                                                            req_colormap=self.cb_var.get())
 
         elif self.model_data_var.get() == const_GUI.models_list[2]:
             # Plot the ERA Interim 2.5 degrees model data
@@ -308,11 +308,11 @@ class plot_RST_GUI:
                                                                                      use_interpolation=self.use_interpolation.get(),
                                                                                      data_to_map=self.data_to_map_var.get(),
                                                                                      show_dots=self.show_dots.get(),
-                                                                                     only_longest_separate=self.only_longest_separate.get())
+                                                                                     only_longest_separate=self.only_longest_separate.get(),
+                                                                                     polyfit_rst=self.polyfit_rst.get())
             rst_map = self.plotRSTs_ERA_25_instance.create_map(map_axis,
                                                             show_rst_info=self.show_rst_info.get(),
-                                                            req_colormap=self.cb_var.get(),
-                                                            polyfit_rst=self.polyfit_rst.get())
+                                                            req_colormap=self.cb_var.get())
 
         if self.detached_map.get() == 0:
             # The map is drawn inside the current GUI

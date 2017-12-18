@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import warnings
 from mpl_toolkits.basemap import Basemap
 
 # My imports
@@ -45,6 +44,11 @@ class PlotRSTs ():
         self.mean_slp_square1 = None
         self.mean_slp_square2 = None
         self.mean_geos_vort_square3 = None
+
+        self.is_rst_condition_met = None
+
+        # Used later for displaying the orientations of all RSTs in a map
+        self.rst_orientation_str = ""
 
     # Read the data files
     def _read_files(self, model_data, data_year):
@@ -93,7 +97,7 @@ class PlotRSTs ():
 
         return interp_data, interp_data_lats, interp_data_lons
 
-    def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots, only_longest_separate):
+    def calculate_maps_data(self, current_day, use_interpolation, data_to_map, show_dots, only_longest_separate, polyfit_rst):
         self.is_interpolated = use_interpolation
 
         # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
@@ -161,14 +165,18 @@ class PlotRSTs ():
 
         # Find Red Sea Trough
         calc_rst_obj = Calculate_RST(slp_data, resolution, consts.slp_check_distance, lats, lons)
-        self.trough_coordinates_matrix = calc_rst_obj.get_trough_coords_matrix(only_longest_separate)
+
+        # Find the RSTs orientations and polyfit them
+        self.trough_coordinates_matrix, self.rst_orientation_str = calc_rst_obj.get_trough_coords_matrix(only_longest_separate, polyfit_rst)
+
+
 
         # Calculate RST conditions in 3 boxes
-        is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
+        self.is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
                                                                        show_geostrophic_vorticity, self.trough_coordinates_matrix)
 
 
-        return is_rst_condition_met
+        return self.is_rst_condition_met
 
     def _calculate_troughs_and_ridges_dots(self, slp_data, total_lat, total_lon):
         troughs_map = np.zeros((total_lat, total_lon))
@@ -299,7 +307,7 @@ class PlotRSTs ():
                 print('RST square conditions are not met')
             print('=====================================')
 
-            if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0) and (self.trough_coordinates_matrix.any()):
+            if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
                 is_rst_condition_met = True
             else:
                 is_rst_condition_met = False
@@ -309,7 +317,7 @@ class PlotRSTs ():
         return is_rst_condition_met
 
     # This function will create the map according to the flags sent in the previous calculate_maps_data method call
-    def create_map(self, map_axis, show_rst_info, req_colormap, polyfit_rst):
+    def create_map(self, map_axis, show_rst_info, req_colormap):
         if self.is_interpolated is None:
             print("Use the calculate_maps_data method before calling create_map")
             return
@@ -317,14 +325,10 @@ class PlotRSTs ():
         # Prepare the right data depending on interpolation
         if self.is_interpolated:
             slp_data = self.interp_slp_data[self.current_day, :, :].squeeze()
-            total_lat = self.interp_data_lats.shape[0]
-            total_lon = self.interp_data_lons.shape[0]
             lats = self.interp_data_lats
             lons = self.interp_data_lons
         else:
             slp_data = self.orig_slp_data[self.current_day, :, :].squeeze()
-            total_lat = self.orig_data_lats.shape[0]
-            total_lon = self.orig_data_lons.shape[0]
             lats = self.orig_data_lats
             lons = self.orig_data_lons
 
@@ -387,36 +391,23 @@ class PlotRSTs ():
             plt.colorbar(cs)
 
         # Draw the RSTs, if any
-        rst_orientation_str =""
-        for current_RST in range(0, int(np.size(self.trough_coordinates_matrix, 1)/2)):
+        for current_RST in range(0, int(np.size(self.trough_coordinates_matrix, 1) / 2)):
             # Get the current trough columns from the trough matrix
-            trough_coords = self.trough_coordinates_matrix[:, 2*current_RST:2*current_RST+2]
+            trough_coords = self.trough_coordinates_matrix[:, 2 * current_RST:2 * current_RST + 2]
             # remove all zeros from current RST
             trough_coords = trough_coords[~(trough_coords == 0).all(1)]
             x_trough = trough_coords[:, 1]
             y_trough = trough_coords[:, 0]
 
-            if polyfit_rst:
-                try:
-                    z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
-                    p = np.poly1d(z)
-                    latp = np.linspace(y_trough[0], y_trough[-1], 100)
-                    x_trough = p(latp)
-                    y_trough = latp
-                except:
-                    print("can't polyfit")
             lat_map, lon_map = rst_map(x_trough, y_trough)
-            rst_map.plot(lat_map, lon_map, marker=None, linewidth = 6, color='black')
+            rst_map.plot(lat_map, lon_map, marker=None, linewidth=6, color='black')
             rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
 
-            # Find the orientation of the RST
-            rst_orientation_str = rst_orientation_str + self._Check_RST_orientation(x_trough, y_trough) + ", "
-
         # Print the orientation results of all found RSTs
-        if rst_orientation_str != "":
-            rst_orientation_str = rst_orientation_str[:-2]
+
+        if self.rst_orientation_str != "":
             x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
-            plt.text(x_dot, y_dot, 'Orientations: ' + rst_orientation_str, fontsize=consts.map_text_fontsize, color='black', weight='bold',
+            plt.text(x_dot, y_dot, 'Orientations: ' + self.rst_orientation_str, fontsize=consts.map_text_fontsize, color='black', weight='bold',
                          bbox=dict(facecolor="white", alpha=0.8))
 
         # Draw the troughs and ridges dots
@@ -468,7 +459,7 @@ class PlotRSTs ():
 
                 # Add a note for met rst conditions
                 x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)
-                if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
+                if self.is_rst_condition_met:
                     # plt.text(x_dot, y_dot, 'RST square conditions met', fontsize=consts.map_text_fontsize, bbox=dict(facecolor="white", alpha=0.5))
                     plt.text(x_dot, y_dot, 'Conditions met', fontsize=consts.map_text_fontsize, color = 'green', weight = 'bold',
                              bbox=dict(facecolor="white", alpha=0.8))
@@ -486,26 +477,6 @@ class PlotRSTs ():
 
         return rst_map
 
-    def _Check_RST_orientation(self, x_trough, y_trough):
-        east = False
-        west = False
-        for current_index in range(np.size(x_trough, 0)):
-            current_lat = y_trough[current_index]
-            current_lon = x_trough[current_index]
-            if current_lat >= consts.rst_square3_lat1 and current_lat <= consts.rst_square3_lat2:
-                if current_lon >= consts.rst_square3_lon1 and current_lon <= consts.central_cross_line_lon:
-                    west = True
-                if current_lon >= consts.central_cross_line_lon and current_lon <= consts.rst_square3_lon2:
-                    east = True
-        if west and east:
-            return consts.rst_orientation_central
-        elif east:
-            return consts.rst_orientation_east
-        elif west:
-            return consts.rst_orientation_west
-        else:
-            return consts.rst_orientation_no_rst
-
     # return the prev day string date and next day string date for the Next/Prev days buttons in the GUI
     def get_next_and_prev_days(self, current_date):
         this_day = 0
@@ -520,6 +491,7 @@ class PlotRSTs ():
             return self.data_string_time[this_day - 1], []
         else:
             return self.data_string_time[this_day - 1], self.data_string_time[this_day + 1]
+
 def main():
     save_maps = False
 
