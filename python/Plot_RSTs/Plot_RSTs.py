@@ -50,6 +50,9 @@ class PlotRSTs ():
         # Used later for displaying the orientations of all RSTs in a map
         self.rst_orientation_str = ""
 
+        # This is the final decision of the rst classification type for the day!
+        self.daily_rst_classification = consts.rst_orientation_no_rst
+
     # Read the data files
     def _read_files(self, model_data, data_year):
         if model_data == 'NCEP':
@@ -166,17 +169,18 @@ class PlotRSTs ():
         # Find Red Sea Trough
         calc_rst_obj = Calculate_RST(slp_data, resolution, consts.slp_check_distance, lats, lons)
 
-        # Find the RSTs orientations and polyfit them
-        self.trough_coordinates_matrix, self.rst_orientation_str = calc_rst_obj.get_trough_coords_matrix(only_longest_separate, polyfit_rst)
-
-
+        # Find the RSTs orientations and polyfit them + get the daily_rst_classification (unless rst conditions are not met
+        self.trough_coordinates_matrix, self.rst_orientation_str, self.daily_rst_classification = calc_rst_obj.get_trough_coords_matrix(only_longest_separate, polyfit_rst)
 
         # Calculate RST conditions in 3 boxes
         self.is_rst_condition_met = self._calculate_rst_conditions_in_boxes(slp_data, self.geostrophic_vorticity_map, lats, lons, resolution,
                                                                        show_geostrophic_vorticity, self.trough_coordinates_matrix)
 
+        # The final rst classification is not rst id conditions are not met.
+        if not self.is_rst_condition_met:
+            self.daily_rst_classification = consts.rst_orientation_no_rst
 
-        return self.is_rst_condition_met
+        return self.daily_rst_classification
 
     def _calculate_troughs_and_ridges_dots(self, slp_data, total_lat, total_lon):
         troughs_map = np.zeros((total_lat, total_lon))
@@ -404,11 +408,15 @@ class PlotRSTs ():
             rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
 
         # Print the orientation results of all found RSTs
-
         if self.rst_orientation_str != "":
             x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
             plt.text(x_dot, y_dot, 'Orientations: ' + self.rst_orientation_str, fontsize=consts.map_text_fontsize, color='black', weight='bold',
                          bbox=dict(facecolor="white", alpha=0.8))
+
+        # Print the daily classification
+        x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 4)
+        plt.text(x_dot, y_dot, 'Classification: ' + self.daily_rst_classification, fontsize=consts.map_text_fontsize, color='black', weight='bold',
+                     bbox=dict(facecolor="white", alpha=0.8))
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:

@@ -58,6 +58,10 @@ class Calculate_RST:
         # each trough has [[x1, y1], [x2, y2], ..., [xn,yn]]
         self.troughs_counter = 0
         self.trough_coords_matrix = np.zeros((self.total_lat*3, consts.max_number_of_RST*2)) # *3 because the algorithm allows goind sideways as well.
+
+        # This will be the final decision about the rst classification of the day (unless rst conditions are not met)
+        self.daily_rst_classification = consts.rst_orientation_no_rst
+
         self._find_all_rsts()
 
     def get_trough_coords_matrix(self, only_long_separate_RSTs=False, polyfit_rst=True):
@@ -86,10 +90,9 @@ class Calculate_RST:
                 self.trough_coords_matrix = long_RSTs_matrix[:, 0:long_RSTs_counter*2]
                 self._leave_only_separate_troughs()
 
-        if polyfit_rst:
-            rst_orientation_str = self._polyfit_rsts_and_find_orientations()
+        rst_orientation_str = self._polyfit_rsts_and_find_orientations(polyfit_rst)
 
-        return self.trough_coords_matrix, rst_orientation_str
+        return self.trough_coords_matrix, rst_orientation_str, self.daily_rst_classification
 
     def _find_all_rsts(self):
         # Find the first point of the trough by comparing slp values to the ones at
@@ -223,10 +226,13 @@ class Calculate_RST:
 
             current_valid_troughs_counter = current_valid_troughs_counter + 1
 
-    def _polyfit_rsts_and_find_orientations(self):
+    def _polyfit_rsts_and_find_orientations(self, polyfit_rst):
+        self.daily_rst_classification = consts.rst_orientation_no_rst
+        daily_class_trough_num = None
         rst_orientation_str = ""
         num_of_rsts = int(np.size(self.trough_coords_matrix, 1) / 2)
         temp_coordinates_matrix = np.zeros((1000, 2*num_of_rsts))
+
         for current_RST in range(0, num_of_rsts):
             # Get the current trough columns from the trough matrix
             trough_coords = self.trough_coords_matrix[:, 2 * current_RST:2 * current_RST + 2]
@@ -235,17 +241,27 @@ class Calculate_RST:
             x_trough = trough_coords[:, 1]
             y_trough = trough_coords[:, 0]
 
-            try:
-                z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
-                p = np.poly1d(z)
-                latp = np.linspace(y_trough[0], y_trough[-1], 100)
-                x_trough = p(latp)
-                y_trough = latp
-            except:
-                print("can't polyfit")
+            if polyfit_rst:
+                try:
+                    z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
+                    p = np.poly1d(z)
+                    latp = np.linspace(y_trough[0], y_trough[-1], 100)
+                    x_trough = p(latp)
+                    y_trough = latp
+                except:
+                    print("can't polyfit")
 
             # Find the orientation of the RST
-            rst_orientation_str = rst_orientation_str + self._Check_RST_orientation(x_trough, y_trough) + ", "
+            current_rst_orientation_str = self._Check_RST_orientation(x_trough, y_trough)
+
+            # Check if it is a better choice for this day's classification result
+            if current_rst_orientation_str != consts.rst_orientation_no_rst:
+                if (self.daily_rst_classification == consts.rst_orientation_no_rst) or (np.max(y_trough) >= np.max(self.trough_coords_matrix[:,2*daily_class_trough_num])):
+                    # This is the first rst which has an orientation or a later rst has an orientation and is has a higher lat value
+                    self.daily_rst_classification = current_rst_orientation_str
+                    daily_class_trough_num = current_RST
+
+            rst_orientation_str = rst_orientation_str + current_rst_orientation_str + ", "
 
             # Return the polyfitted trough to the trough coords matrix
             temp_coordinates_matrix[0:np.size(y_trough,0), 2 * current_RST] = y_trough
