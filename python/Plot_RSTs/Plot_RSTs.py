@@ -284,7 +284,7 @@ class PlotRSTs ():
         indexed_rst_square1_lon2 = math.floor((consts.rst_square1_lon2 - lowest_lon) * multiplier)
         self.mean_slp_square1 = np.mean(np.mean(slp_data[indexed_rst_square1_lat1:indexed_rst_square1_lat2+1,
                                            indexed_rst_square1_lon1:indexed_rst_square1_lon2+1])) / 100
-        print("mean SLP at square 1: %f", self.mean_slp_square1)
+        #print("mean SLP at square 1: %f", self.mean_slp_square1)
 
         indexed_rst_square2_lat1 = math.ceil((consts.rst_square2_lat1 - lowest_lat) * multiplier)
         indexed_rst_square2_lat2 = math.floor((consts.rst_square2_lat2 - lowest_lat) * multiplier)
@@ -292,7 +292,7 @@ class PlotRSTs ():
         indexed_rst_square2_lon2 = math.floor((consts.rst_square2_lon2 - lowest_lon) * multiplier)
         self.mean_slp_square2 = np.mean(np.mean(slp_data[indexed_rst_square2_lat1:indexed_rst_square2_lat2+1,
                                            indexed_rst_square2_lon1:indexed_rst_square2_lon2+1])) / 100
-        print("mean SLP at square 2: %f", self.mean_slp_square2)
+        #print("mean SLP at square 2: %f", self.mean_slp_square2)
 
         # Calculate the mean Geostrophic Vorticity in the 3rd RST square
         if show_geostrophic_vorticity:
@@ -301,15 +301,15 @@ class PlotRSTs ():
             indexed_rst_square3_lon1 = math.ceil((consts.rst_square3_lon1 - lowest_lon) * multiplier)
             indexed_rst_square3_lon2 = math.floor((consts.rst_square3_lon2 - lowest_lon) * multiplier)
             self.mean_geos_vort_square3 = np.mean(np.mean(geostrophic_vorticity_map[indexed_rst_square3_lat1:indexed_rst_square3_lat2+1, indexed_rst_square3_lon1:indexed_rst_square3_lon2+1])) / 100
-            print("mean Geostrophic Vorticity at square 3: %f", self.mean_geos_vort_square3)
+            #print("mean Geostrophic Vorticity at square 3: %f", self.mean_geos_vort_square3)
 
         # Check for the RST square condition
         if show_geostrophic_vorticity:
-            if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
-                print('RST square conditions met')
-            else:
-                print('RST square conditions are not met')
-            print('=====================================')
+            # if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
+            #     print('RST square conditions met')
+            # else:
+            #     print('RST square conditions are not met')
+            # print('=====================================')
 
             if (self.mean_slp_square1 < self.mean_slp_square2) and (self.mean_geos_vort_square3 > 0):
                 is_rst_condition_met = True

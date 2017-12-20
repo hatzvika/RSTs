@@ -143,22 +143,31 @@ class Calculate_RST:
             for current_neighbor in range(np.size(self.neighbors_matrix, 0)):
                 current_neighbor_lat = current_lat_index + self.neighbors_matrix[current_neighbor][0]
                 current_neighbor_lon = current_lon_index + self.neighbors_matrix[current_neighbor][1]
-                current_neighbor_slp = self.slp_data[current_neighbor_lat, current_neighbor_lon]
-                # Check if slp value is indeed rising
-                if current_neighbor_slp > last_found_slp:
-                    for current_compare in range(np.size(self.test_matrix, 0)):
-                        compared_slp_1 = self.slp_data[current_neighbor_lat + self.test_matrix[current_compare][0],
-                                                       current_neighbor_lon + self.test_matrix[current_compare][1]]
-                        compared_slp_2 = self.slp_data[current_neighbor_lat + self.test_matrix[current_compare][2],
-                                                       current_neighbor_lon + self.test_matrix[current_compare][3]]
-                        current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_neighbor_slp)
-                        if (current_neighbor_slp < compared_slp_1) and (current_neighbor_slp < compared_slp_2) and (current_maxima > maximum_diff):
-                            trough_end = False
-                            maximum_diff = current_maxima
-                            self.trough_coords_matrix[points_in_trough_counter, 2 * self.troughs_counter:2 * self.troughs_counter + 2] = \
-                                self.lats[current_neighbor_lat],self.lons[current_neighbor_lon]
-                            next_neighbor_lat = current_neighbor_lat
-                            next_neighbor_lon = current_neighbor_lon
+                if (current_neighbor_lat < self.total_lat) and (current_neighbor_lat >= 0) and (current_neighbor_lon < self.total_lon) and (current_neighbor_lon >= 0):
+                    current_neighbor_slp = self.slp_data[current_neighbor_lat, current_neighbor_lon]
+                    # Check if slp value is indeed rising
+                    if current_neighbor_slp > last_found_slp:
+                        for current_compare in range(np.size(self.test_matrix, 0)):
+                            compared_slp_1_lat = current_neighbor_lat + self.test_matrix[current_compare][0]
+                            compared_slp_1_lon = current_neighbor_lon + self.test_matrix[current_compare][1]
+                            compared_slp_2_lat = current_neighbor_lat + self.test_matrix[current_compare][2]
+                            compared_slp_2_lon = current_neighbor_lon + self.test_matrix[current_compare][3]
+
+                            if (compared_slp_1_lat < self.total_lat) and (compared_slp_1_lat >= 0) \
+                                and (compared_slp_1_lon < self.total_lon) and (compared_slp_1_lon >= 0) \
+                                and (compared_slp_2_lat < self.total_lat) and (compared_slp_2_lat >= 0) \
+                                and (compared_slp_2_lon < self.total_lon) and (compared_slp_2_lon >= 0):
+
+                                compared_slp_1 = self.slp_data[compared_slp_1_lat, compared_slp_1_lon]
+                                compared_slp_2 = self.slp_data[compared_slp_2_lat, compared_slp_2_lon]
+                                current_maxima = compared_slp_1 + compared_slp_2 - (2 * current_neighbor_slp)
+                                if (current_neighbor_slp < compared_slp_1) and (current_neighbor_slp < compared_slp_2) and (current_maxima > maximum_diff):
+                                    trough_end = False
+                                    maximum_diff = current_maxima
+                                    self.trough_coords_matrix[points_in_trough_counter, 2 * self.troughs_counter:2 * self.troughs_counter + 2] = \
+                                        self.lats[current_neighbor_lat],self.lons[current_neighbor_lon]
+                                    next_neighbor_lat = current_neighbor_lat
+                                    next_neighbor_lon = current_neighbor_lon
             current_lat_index = next_neighbor_lat
             current_lon_index = next_neighbor_lon
             points_in_trough_counter = points_in_trough_counter +1
@@ -230,7 +239,10 @@ class Calculate_RST:
         self.daily_rst_classification = consts.rst_orientation_no_rst
         daily_class_trough_num = None
         rst_orientation_str = ""
-        num_of_rsts = int(np.size(self.trough_coords_matrix, 1) / 2)
+        if len(self.trough_coords_matrix) != 0:
+            num_of_rsts = int(np.size(self.trough_coords_matrix, 1) / 2)
+        else:
+            num_of_rsts = 0
         temp_coordinates_matrix = np.zeros((1000, 2*num_of_rsts))
 
         for current_RST in range(0, num_of_rsts):
