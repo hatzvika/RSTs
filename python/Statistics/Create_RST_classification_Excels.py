@@ -11,12 +11,10 @@ polyfit_rst = True
 data_to_map_var = 'Geostrophic Vorticity'
 show_dots = False
 
-excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xls'
-excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xls'
-excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification__ERA_2.5_1979-2016.xls'
-#table_xls_NCEP = np.zeros([366, 70])  # days in a leap year, years
-#table_xls_ERA = np.zeros([366, 70])  # days in a leap year, years
-#table_xls_ERA_2_5 = np.zeros([366, 70])  # days in a leap year, years
+excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xlsx'
+excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
+excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
+
 wb_NCEP = Workbook()
 ws_NCEP = wb_NCEP.active
 wb_ERA = Workbook()
@@ -63,11 +61,8 @@ for current_year in year_list:
             leap_year_offset = 1
 
         ws_NCEP.cell(column=cols_counter, row=rows_counter+leap_year_offset, value=NCEP_daily_rst_classification)
-        ws_ERA.cell(column=cols_counter, row=rows_counter+leap_year_offset, value=NCEP_daily_rst_classification)
-        ws_ERA_25.cell(column=cols_counter, row=rows_counter+leap_year_offset, value=NCEP_daily_rst_classification)
-        #table_xls_NCEP[days_counter + leap_year_offset, years_counter] =  NCEP_daily_rst_classification
-        #table_xls_ERA[days_counter + leap_year_offset, years_counter] =  ERA_daily_rst_classification
-        #table_xls_ERA_2_5[days_counter + leap_year_offset, years_counter] =  ERA_25_daily_rst_classification
+        ws_ERA.cell(column=cols_counter, row=rows_counter+leap_year_offset, value=ERA_daily_rst_classification)
+        ws_ERA_25.cell(column=cols_counter, row=rows_counter+leap_year_offset, value=ERA_25_daily_rst_classification)
 
         previous_month_day = current_month_day
         rows_counter = rows_counter + 1

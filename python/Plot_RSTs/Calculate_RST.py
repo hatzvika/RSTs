@@ -253,16 +253,6 @@ class Calculate_RST:
             x_trough = trough_coords[:, 1]
             y_trough = trough_coords[:, 0]
 
-            if polyfit_rst:
-                try:
-                    z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
-                    p = np.poly1d(z)
-                    latp = np.linspace(y_trough[0], y_trough[-1], 100)
-                    x_trough = p(latp)
-                    y_trough = latp
-                except:
-                    print("can't polyfit")
-
             # Find the orientation of the RST
             current_rst_orientation_str = self._Check_RST_orientation(x_trough, y_trough)
 
@@ -274,6 +264,18 @@ class Calculate_RST:
                     daily_class_trough_num = current_RST
 
             rst_orientation_str = rst_orientation_str + current_rst_orientation_str + ", "
+
+            # Smooth the RST for display purposes
+            if polyfit_rst:
+                try:
+                    z = np.polyfit(y_trough, x_trough, 3)  # I invert the x and y because of the trough shape from south to north
+                    p = np.poly1d(z)
+                    latp = np.linspace(y_trough[0], y_trough[-1], 100)
+                    x_trough = p(latp)
+                    y_trough = latp
+                except:
+                    print("can't polyfit")
+
 
             # Return the polyfitted trough to the trough coords matrix
             temp_coordinates_matrix[0:np.size(y_trough,0), 2 * current_RST] = y_trough

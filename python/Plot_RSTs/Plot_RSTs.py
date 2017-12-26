@@ -75,6 +75,9 @@ class PlotRSTs ():
         slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=2, delta_time=4)
         uwind_data = read_nc_files(uwind_filename, start_time=2, delta_time=4)[0]
         vwind_data = read_nc_files(vwind_filename, start_time=2, delta_time=4)[0]
+        # slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=0, delta_time=4) # For 00Z!
+        # uwind_data = read_nc_files(uwind_filename, start_time=0, delta_time=4)[0] # For 00Z!
+        # vwind_data = read_nc_files(vwind_filename, start_time=0, delta_time=4)[0] # For 00Z!
 
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
 
