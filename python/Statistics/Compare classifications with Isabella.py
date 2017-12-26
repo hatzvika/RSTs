@@ -39,27 +39,27 @@ for row in range (ws_NCEP.max_row - 1):
             output_row_NCEP = 0
         elif NCEP_value == "East":
             output_row_NCEP = 1
-        elif NCEP_value == "Central":
-            output_row_NCEP = 2
         elif NCEP_value == "West":
+            output_row_NCEP = 2
+        elif NCEP_value == "Central":
             output_row_NCEP = 3
 
         if ERA_value == "No RST":
             output_row_ERA = 5
         elif ERA_value == "East":
             output_row_ERA = 6
-        elif ERA_value == "Central":
-            output_row_ERA = 7
         elif ERA_value == "West":
+            output_row_ERA = 7
+        elif ERA_value == "Central":
             output_row_ERA = 8
 
         if ERA_2_5_value == "No RST":
             output_row_ERA_2_5 = 10
         elif ERA_2_5_value == "East":
             output_row_ERA_2_5 = 11
-        elif ERA_2_5_value == "Central":
-            output_row_ERA_2_5 = 12
         elif ERA_2_5_value == "West":
+            output_row_ERA_2_5 = 12
+        elif ERA_2_5_value == "Central":
             output_row_ERA_2_5 = 13
 
         if isabella_value is not None:  # Make sure not to read the None value in a non-leap year
