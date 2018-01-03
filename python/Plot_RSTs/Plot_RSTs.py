@@ -10,7 +10,7 @@ from python.utils.my_interp import my_interp
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
 class PlotRSTs ():
-    def __init__(self, model_data='NCEP', data_year=1984):
+    def __init__(self, model_data='NCEP', data_year=1984, z_hour=12):
         self.model_data = model_data
 
         # Read the data files
@@ -20,7 +20,7 @@ class PlotRSTs ():
          self.orig_data_lats,
          self.orig_data_lons,
          self.data_time,
-         self.data_string_time) = self._read_files(model_data, data_year)
+         self.data_string_time) = self._read_files(model_data, data_year, z_hour)
 
         # Interpolate the data. All the data is interpolated and the
         # decision on which data to use is left outside the class
@@ -54,7 +54,7 @@ class PlotRSTs ():
         self.daily_rst_classification = consts.rst_orientation_no_rst
 
     # Read the data files
-    def _read_files(self, model_data, data_year):
+    def _read_files(self, model_data, data_year, z_hour):
         if model_data == 'NCEP':
             slp_filename = consts.raw_data_prefix + "SLP/NCEP/SLP_NCEP_10-50N_20-50E_full_" + str(data_year) + ".nc"
             uwind_filename = consts.raw_data_prefix + "uwind/NCEP/uwind_NCEP_850hPa_10-50N_20-50E_full_" + str(data_year) + ".nc"
@@ -71,13 +71,10 @@ class PlotRSTs ():
         else:
             print("Wrong model_data name")
             return
-
-        slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=2, delta_time=4)
-        uwind_data = read_nc_files(uwind_filename, start_time=2, delta_time=4)[0]
-        vwind_data = read_nc_files(vwind_filename, start_time=2, delta_time=4)[0]
-        # slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=0, delta_time=4) # For 00Z!
-        # uwind_data = read_nc_files(uwind_filename, start_time=0, delta_time=4)[0] # For 00Z!
-        # vwind_data = read_nc_files(vwind_filename, start_time=0, delta_time=4)[0] # For 00Z!
+        calc_start_time = int(z_hour/6)  # for 12Z it should be 2 and for 0Z it should be 0
+        slp_data, orig_data_lats, orig_data_lons, data_time, data_string_time = read_nc_files(slp_filename, start_time=calc_start_time, delta_time=4)
+        uwind_data = read_nc_files(uwind_filename, start_time=calc_start_time, delta_time=4)[0]
+        vwind_data = read_nc_files(vwind_filename, start_time=calc_start_time, delta_time=4)[0]
 
         return slp_data, uwind_data, vwind_data, orig_data_lats, orig_data_lons, data_time, data_string_time
 

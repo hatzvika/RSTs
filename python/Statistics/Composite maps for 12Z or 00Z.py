@@ -1,6 +1,4 @@
 import numpy as np
-from openpyxl import load_workbook
-from time import strptime
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
@@ -8,15 +6,8 @@ import python.Plot_RSTs.plot_RST_constants as consts
 from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
-#############################################
-# Which classes to create a composite map for
-#############################################
-#  new_algo_class = "No RST"
-new_algo_class = "East"
-# new_algo_class = "West"
-#new_algo_class = "Central"
-
-isabella_class = 3
+# This script creates the composite maps comprising all RST types of 00Z or 12Z
+maps_for_12z = True  # False = 00Z
 
 #############################################
 # Which DB to create a composite map for
@@ -28,85 +19,54 @@ req_DB = "NCEP"
 lons = np.arange(20, 50.5, 0.5)
 lats = np.arange(10, 50.5, 0.5)
 
-current_year = 1979 # This is the starting year. Later it will changed in the main loop
+current_year = 1979 # This is the starting year. Later it will be changed in the main loop
 
-# Prepare the requested worksheets for the input classifications and initialize the plotRSTs objects according to the start year
-if req_DB == "NCEP":
-    excel_filename_new_algo = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xlsx'
-    plotRSTs_instance = PlotRSTs('NCEP', current_year)
-elif req_DB == "ERA":
-    excel_filename_new_algo = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
-    plotRSTs_instance = PlotRSTs('ERA_Interim', current_year)
-else:  # ERA_2_5
-    excel_filename_new_algo = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
-    plotRSTs_instance = PlotRSTs('ERA Int 2.5', current_year)
+if maps_for_12z:
+    z_hour = 12
+else:
+    z_hour = 0
 
-excel_filename_Isabella = 'C:/Users/hatzv/Documents/Geography/Research_help/synoptic_classification/My_classification/synoptic_classification_1948-21_Sep_2017.xlsx'
-
-wb_new_algo = load_workbook(excel_filename_new_algo, read_only=True)
-ws_new_algo = wb_new_algo.active
-table_new_algo = ws_new_algo['B2':'AM367']
-
-wb_Isabella = load_workbook(excel_filename_Isabella, read_only=True)
-ws_Isabella = wb_Isabella.active
-table_Isabella = ws_Isabella['A1':'BS367']
-
-match_cases_counter = 0
+rsts_cases_counter = 0
 composite_slp_map = np.zeros([81, 61])
 composite_geostrophic_map = np.zeros([81, 61])
 
 # Main loop to collect all the single match map for the final composite map
-for col in range(ws_new_algo.max_column - 1):
-    for row in range(ws_new_algo.max_row - 1):
-        new_algo_value = table_new_algo[row][col].value
-        isabella_value = table_Isabella[row+1][col+33].value # +33 because we need the first 2 columns, and the file starts from 1948
+for current_year in range(1979, 2017):
+    print(current_year)
 
-        if (new_algo_value == new_algo_class) and (isabella_value == isabella_class):
-            match_cases_counter = match_cases_counter + 1
+    # Get the PlotRST instance for the current year
+    if req_DB == "NCEP":
+        plotRSTs_instance = PlotRSTs('NCEP', current_year, z_hour=z_hour)
+    elif req_DB == "ERA":
+        plotRSTs_instance = PlotRSTs('ERA_Interim', current_year, z_hour=z_hour)
+    else:  # ERA_2_5
+        plotRSTs_instance = PlotRSTs('ERA Int 2.5', current_year, z_hour=z_hour)
 
-            # Find the string date to pass to the PlotRST class
-            current_year_str = str(table_Isabella[0][col+33].value)
-            current_month = strptime(table_Isabella[row+1][0].value, '%b').tm_mon
-            if current_month < 10:
-                current_month_str = "0" + str(current_month)
-            else:
-                current_month_str = str(current_month)
-            current_day = table_Isabella[row+1][1].value
-            if current_day < 10:
-                current_day_str = "0" + str(current_day)
-            else:
-                current_day_str = str(current_day)
-            current_date = current_year_str + "-" + current_month_str + "-" + current_day_str + " 12:00:00"
+    data_string_array = plotRSTs_instance.data_string_time
 
-            # Change the PlotRST instance for the current year, if needed
-            if current_year < int(current_year_str):
-                current_year = int(current_year_str)
-                if req_DB == "NCEP":
-                    plotRSTs_instance = PlotRSTs('NCEP', current_year)
-                elif req_DB == "ERA":
-                    plotRSTs_instance = PlotRSTs('ERA_Interim', current_year)
-                else:  # ERA_2_5
-                    plotRSTs_instance = PlotRSTs('ERA Int 2.5', current_year)
+    for current_day in range (np.size(data_string_array,0)):
+        # Calculate the maps for the current date
+        _rst_class, slp_map, geostrophic_vorticity_map = plotRSTs_instance.calculate_maps_data(str(data_string_array[current_day]),
+                                                                                               use_interpolation=True,
+                                                                                               data_to_map="Geostrophic Vorticity",
+                                                                                               show_dots=False,
+                                                                                               only_longest_separate=True,
+                                                                                               polyfit_rst=False)
 
-            # Calculate the maps for the current date
-            _rst_class, slp_map, geostrophic_vorticity_map = plotRSTs_instance.calculate_maps_data(current_date,
-                                                                                                   use_interpolation=True,
-                                                                                                   data_to_map="Geostrophic Vorticity",
-                                                                                                   show_dots=False,
-                                                                                                   only_longest_separate=True,
-                                                                                                   polyfit_rst=False)
+        if _rst_class != consts.rst_orientation_no_rst:
+            rsts_cases_counter = rsts_cases_counter + 1
 
-            # Add the current dtae maps to the composite map
+            # Add the current date maps to the composite map
             composite_slp_map = composite_slp_map + slp_map
             composite_geostrophic_map = composite_geostrophic_map +geostrophic_vorticity_map
 
-            print(current_date)
+    print(rsts_cases_counter)
 
-print(match_cases_counter)
+print(rsts_cases_counter)
 
 # Divide the composite by the number of cases to get the average values
-composite_slp_map = composite_slp_map / match_cases_counter
-composite_geostrophic_map = composite_geostrophic_map / match_cases_counter
+composite_slp_map = composite_slp_map / rsts_cases_counter
+composite_geostrophic_map = composite_geostrophic_map / rsts_cases_counter
 
 # Display the maps
 # Create the map object
@@ -122,7 +82,7 @@ rst_map.drawmeridians(np.arange(consts.map_lon1, consts.map_lon2, 2.5), labels=[
 # map_axis.set(cmap = plt.cm.get_cmap('Blues_r')) #colormap = 'coolwarm',
 
 # Build map title
-plot_title = new_algo_class + " and " + str(isabella_class)
+plot_title = str(z_hour) + "Z"
 plt.title(plot_title)
 
 # Calculate the meshes for the maps and plot SLP contours (always)
