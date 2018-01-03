@@ -16,7 +16,7 @@ new_algo_class = "East"
 # new_algo_class = "West"
 #new_algo_class = "Central"
 
-isabella_class = 9
+isabella_class = 3
 
 #############################################
 # Which DB to create a composite map for
