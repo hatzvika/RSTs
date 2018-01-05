@@ -7,7 +7,7 @@ from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
 # This script creates the composite maps comprising all RST types of 00Z or 12Z
-maps_for_12z = True  # False = 00Z
+maps_for_12z = False  # False = 00Z
 
 #############################################
 # Which DB to create a composite map for

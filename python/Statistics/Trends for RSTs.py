@@ -1,7 +1,7 @@
 from openpyxl import Workbook, load_workbook
 from time import strptime
 
-seasonal_trends = True  # False for monthly trends
+seasonal_trends = False  # False for monthly trends
 
 output_dir = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/'
 
@@ -49,19 +49,19 @@ table_NCEP_NO_RSTs = ws_NCEP_NO_RSTs['B2':'AM13']
 table_NCEP_East = ws_NCEP_East['B2':'AM13']
 table_NCEP_West = ws_NCEP_West['B2':'AM13']
 table_NCEP_Central = ws_NCEP_Central['B2':'AM13']
-table_NCEP_All = ws_NCEP_All['B2':'AM5']
+table_NCEP_All = ws_NCEP_All['B2':'AM13']
 
 table_ERA_NO_RSTs = ws_ERA_NO_RSTs['B2':'AM13']
 table_ERA_East = ws_ERA_East['B2':'AM13']
 table_ERA_West = ws_ERA_West['B2':'AM13']
 table_ERA_Central = ws_ERA_Central['B2':'AM13']
-table_ERA_All = ws_ERA_All['B2':'AM5']
+table_ERA_All = ws_ERA_All['B2':'AM13']
 
 table_ERA_2_5_NO_RSTs = ws_ERA_2_5_NO_RSTs['B2':'AM13']
 table_ERA_2_5_East = ws_ERA_2_5_East['B2':'AM13']
 table_ERA_2_5_West = ws_ERA_2_5_West['B2':'AM13']
 table_ERA_2_5_Central = ws_ERA_2_5_Central['B2':'AM13']
-table_ERA_2_5_All = ws_ERA_2_5_All['B2':'AM5']
+table_ERA_2_5_All = ws_ERA_2_5_All['B2':'AM13']
 
 # Prepare the worksheets for the input classifications
 excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xlsx'
@@ -181,5 +181,5 @@ for row in range(1, ws_NCEP.max_row-1):
                     output_ERA_2_5_table[current_row][col - 1].value = 1
 
 wb_NCEP_trends.save(output_excel_filename_NCEP)
-wb_NCEP_trends.save(output_excel_filename_ERA)
-wb_NCEP_trends.save(output_excel_filename_ERA_2_5)
+#wb_ERA_trends.save(output_excel_filename_ERA)
+#wb_ERA_2_5_trends.save(output_excel_filename_ERA_2_5)
