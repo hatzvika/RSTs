@@ -24,14 +24,14 @@ server.retrieve({
     "step": "0",
     # all available parameters, for codes see http://apps.ecmwf.int/codes/grib/param-db
     # Most used params by me are: Mean SLP = 151.128, Uwind = 131.128, Vwind = 132.128
-    "param": "132.128",
+    "param": "131.128",
     # dates of data (YYYY-MM-DD)
-    "date": "1994-01-01/to/1994-12-31",
+    "date": "2017-01-01/to/2017-12-31",
     # in 0.75 degrees lat/lon
     "grid": "0.75/0.75",
     # optionally restrict area (in N/W/S/E).
     "area": "50.25/19.5/9.75/50.25",
     "format": "netcdf",
     # set an output file name
-    "target": "vwind_ERA_Int_850hPa_10-50N_20-50E_full_1994.nc",
+    "target": "uwind_ERA_Int_850hPa_10-50N_20-50E_full_2017.nc",
 })
