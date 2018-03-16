@@ -299,6 +299,8 @@ class Calculate_RST:
                     west = True
                 if current_lon >= consts.central_cross_line_lon and current_lon <= consts.rst_square3_lon2:
                     east = True
+        #if (west or east) and (y_trough[0] > 30):
+        #    return consts.rst_orientation_testing
         if west and east:
             return consts.rst_orientation_central
         elif east:
@@ -307,7 +309,3 @@ class Calculate_RST:
             return consts.rst_orientation_west
         else:
             return consts.rst_orientation_no_rst
-
-
-
-

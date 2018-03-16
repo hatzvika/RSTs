@@ -4,13 +4,13 @@ server = ECMWFDataServer()
 
 # This script downloads ERA-Interim forecasts, on pressure levels or surface.
 # Adapt the script to your requirements.
-for current_year in range (1979, 1982):
+for current_year in range (2016, 2018):
     for param_str in ["151.128", "131.128", "132.128"]:
         if param_str == "151.128":
             levtype_str = "sfc"
             levlist_str = "850"
             param_name = "SLP"
-            target_str = param_name + "_ERA_Int_10-50N_20-50E_full_" + str(current_year) + ".nc"
+            target_str = param_name + "_ERA_Int_2.5_10-50N_20-50E_full_" + str(current_year) + ".nc"
         else:
             levtype_str = "pl"
             levlist_str = "850"
@@ -18,7 +18,7 @@ for current_year in range (1979, 1982):
                 param_name = "uwind"
             else:
                 param_name = "vwind"
-            target_str = param_name + "_ERA_Int_850hPa_10-50N_20-50E_full_" + str(current_year) + ".nc"
+            target_str = param_name + "_ERA_Int_2.5_850hPa_10-50N_20-50E_full_" + str(current_year) + ".nc"
 
         date_str = str(current_year) + "-01-01/to/" + str(current_year) + "-12-31"
 
@@ -44,9 +44,11 @@ for current_year in range (1979, 1982):
             # dates of data (YYYY-MM-DD)
             "date": date_str,
             # in 0.75 degrees lat/lon
-            "grid": "0.75/0.75",
+            # "grid": "0.75/0.75",
+            "grid": "2.5/2.5",
             # optionally restrict area (in N/W/S/E).
-            "area": "50.25/19.5/9.75/50.25",
+            # "area": "50.25/19.5/9.75/50.25",
+            "area": "50/20/10/50",
             "format": "netcdf",
             # set an output file name
             "target": target_str

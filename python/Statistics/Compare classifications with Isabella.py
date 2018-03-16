@@ -1,15 +1,15 @@
 from openpyxl import load_workbook, Workbook
 
 # Prepare the worksheet for the output comparison
-excel_filename_comparison = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/classification_comparison_1979-2016.xlsx'
+excel_filename_comparison = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/classification_comparison_1979-2016_32-38.xlsx'
 wb_comparison = Workbook()
 ws_comparison = wb_comparison.active
 table_comparison = ws_comparison['B2':'T15']
 
 # Prepare the worksheets for the input classifications
-excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xlsx'
-excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
-excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
+excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016_32-38.xlsx'
+excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016_32-38.xlsx'
+excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016_32-38.xlsx'
 excel_filename_Isabella = 'C:/Users/hatzv/Documents/Geography/Research_help/synoptic_classification/My_classification/synoptic_classification_1948-21_Sep_2017.xlsx'
 
 wb_NCEP = load_workbook(excel_filename_NCEP, read_only=True)

@@ -2,11 +2,11 @@ from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 #import numpy as np
 from openpyxl import Workbook
 
-NCEP_start_year = 1948  # Can be 1979 as well
+NCEP_start_year = 1979  # Can be 1979 as well
 NCEP_end_year = 2017
 
 # Choose if only NCEP will be done
-only_NCEP = True
+only_NCEP = False
 
 # Parameters for the calculations that can change
 use_interpolation = True
@@ -17,9 +17,9 @@ polyfit_rst = True
 data_to_map_var = 'Geostrophic Vorticity'
 show_dots = False
 
-excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_' + str(NCEP_start_year) + '-' + str(NCEP_end_year) + '.xlsx'
-excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
-excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
+excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_' + str(NCEP_start_year) + '-' + str(NCEP_end_year) + '_32-38.xlsx'
+excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016_32-38.xlsx'
+excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016_32-38.xlsx'
 
 wb_NCEP = Workbook()
 ws_NCEP = wb_NCEP.active
@@ -44,27 +44,27 @@ for current_year in year_list:
     if not only_NCEP:
         plotRSTs_ERA_instance = PlotRSTs('ERA_Interim', current_year)
         plotRSTs_ERA_25_instance = PlotRSTs('ERA Int 2.5', current_year)
-    data_string_time = plotRSTs_NCEP_instance.data_string_time
+    data_string_time = plotRSTs_ERA_25_instance.data_string_time
     previous_month_day = ""
     leap_year_offset = 0
     rows_counter = 2
     for current_day in data_string_time:
         current_day_str = str(current_day)
         print(current_day_str)
-        NCEP_daily_rst_classification,_,_ = plotRSTs_NCEP_instance.calculate_maps_data(current_day_str,
+        NCEP_daily_rst_classification,_,_,_ = plotRSTs_NCEP_instance.calculate_maps_data(current_day_str,
                                                                                    use_interpolation=use_interpolation,
                                                                                    data_to_map=data_to_map_var,
                                                                                    show_dots=show_dots,
                                                                                    only_longest_separate=only_longest_separate,
                                                                                    polyfit_rst=polyfit_rst)
         if not only_NCEP:
-            ERA_daily_rst_classification = plotRSTs_ERA_instance.calculate_maps_data(current_day_str,
+            ERA_daily_rst_classification,_,_,_ = plotRSTs_ERA_instance.calculate_maps_data(current_day_str,
                                                                                      use_interpolation=use_interpolation,
                                                                                      data_to_map=data_to_map_var,
                                                                                      show_dots=show_dots,
                                                                                      only_longest_separate=only_longest_separate,
                                                                                      polyfit_rst=polyfit_rst)
-            ERA_25_daily_rst_classification = plotRSTs_ERA_25_instance.calculate_maps_data(current_day_str,
+            ERA_25_daily_rst_classification,_,_,_ = plotRSTs_ERA_25_instance.calculate_maps_data(current_day_str,
                                                                                            use_interpolation=use_interpolation,
                                                                                            data_to_map=data_to_map_var,
                                                                                            show_dots=show_dots,

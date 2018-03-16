@@ -180,7 +180,7 @@ class PlotRSTs ():
         if not self.is_rst_condition_met:
             self.daily_rst_classification = consts.rst_orientation_no_rst
 
-        return self.daily_rst_classification, slp_data, self.geostrophic_vorticity_map
+        return self.daily_rst_classification, slp_data, self.geostrophic_vorticity_map, self.is_rst_condition_met
 
     def _calculate_troughs_and_ridges_dots(self, slp_data, total_lat, total_lon):
         troughs_map = np.zeros((total_lat, total_lon))

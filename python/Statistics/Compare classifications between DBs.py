@@ -1,22 +1,22 @@
 from openpyxl import load_workbook, Workbook
 
-use_only_Oct_to_Feb = True  # This is a flag to choose between a period of time or all cases.
+use_only_Oct_to_Feb = False  # This is a flag to choose between a period of time or all cases.
 
 output_dir = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/'
 
 # Prepare the worksheet for the output comparison
 if use_only_Oct_to_Feb:
-    excel_filename_comparison = output_dir + 'classification_comparison_between_DBs_Oct-Feb_1979-2016.xlsx'
+    excel_filename_comparison = output_dir + 'classification_comparison_between_DBs_Oct-Feb_1979-2016_32-38.xlsx'
 else:
-    excel_filename_comparison = output_dir + 'classification_comparison_between_DBs_1979-2016.xlsx'
+    excel_filename_comparison = output_dir + 'classification_comparison_between_DBs_1979-2016_32-38.xlsx'
 wb_comparison = Workbook()
 ws_comparison = wb_comparison.active
 table_comparison = ws_comparison['B2':'T15']
 
 # Prepare the worksheets for the input classifications
-excel_filename_NCEP = output_dir + 'RST_classification_NCEP_1979-2016.xlsx'
-excel_filename_ERA = output_dir + 'RST_classification_ERA_1979-2016.xlsx'
-excel_filename_ERA_2_5 = output_dir + 'RST_classification_ERA_2.5_1979-2016.xlsx'
+excel_filename_NCEP = output_dir + 'RST_classification_NCEP_1979-2016_32-38.xlsx'
+excel_filename_ERA = output_dir + 'RST_classification_ERA_1979-2016_32-38.xlsx'
+excel_filename_ERA_2_5 = output_dir + 'RST_classification_ERA_2.5_1979-2016_32-38.xlsx'
 
 wb_NCEP = load_workbook(excel_filename_NCEP, read_only=True)
 ws_NCEP = wb_NCEP.active
