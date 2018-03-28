@@ -52,6 +52,15 @@ class Calculate_RST:
                                  [1, 0],    # Upper
                                  [1,1],     # Upper right
                                  [0,1]]     # Right
+                                 # [0, -2],  # Far left
+                                 # [1, -2],  #
+                                 # [2, -2],  # Far upper left
+                                 # [2, -1],  #
+                                 # [2, 0],  # Far upper
+                                 # [2, 1],  #
+                                 # [2, 2],  # Far upper right
+                                 # [1, 2],  #
+                                 # [0, 2]]  # Far right
 
         # There can be multiple troughs found.
         # Each takes 2 columns in the trough matrix.
@@ -182,7 +191,6 @@ class Calculate_RST:
 
     def _leave_only_separate_troughs(self):
         # This function removes converging troughs, leaving only the longest troughs.
-        # If two troughs converge and have the same length, the one with a lower SLP is chosen.
         current_valid_troughs_counter = 0
         while (2 * current_valid_troughs_counter) < np.size(self.trough_coords_matrix, 1):
             # Get tested trough
@@ -190,6 +198,12 @@ class Calculate_RST:
             # remove all zeros from tested trough
             tested_trough = tested_trough[~(tested_trough == 0).all(1)]
             other_trough_index = current_valid_troughs_counter + 1
+
+            # Initialize the additive longitude values arrays
+            # This array concatenates every overlapping RST, and is sorted in the end to find the low and high values in each latitude.
+            # It is done this way because it is fast and because there could be multiple values for each latitude in a single RST.
+            additive_current_valid_trough = tested_trough
+
             while (2 * other_trough_index) < np.size(self.trough_coords_matrix, 1):
                 other_trough = self.trough_coords_matrix[:, other_trough_index*2:other_trough_index*2+2]
                 # remove all zeros from other trough
@@ -212,8 +226,12 @@ class Calculate_RST:
                         break
 
                 if not is_different:
+                    # Add the current other_trough to the additive_current_valid_trough
+                    additive_current_valid_trough = np.concatenate((additive_current_valid_trough, other_trough), axis=0)
+
                     if other_trough_length > tested_trough_length:
                         tested_trough = other_trough
+
                         self.trough_coords_matrix[:, current_valid_troughs_counter * 2:current_valid_troughs_counter * 2 + 2] = \
                             self.trough_coords_matrix[:, other_trough_index * 2:other_trough_index * 2 + 2]
                     # elif other_trough_length == tested_trough_length:
@@ -232,6 +250,34 @@ class Calculate_RST:
                     self.trough_coords_matrix = np.delete(self.trough_coords_matrix, other_trough_index * 2, 1)
                 else:
                     other_trough_index = other_trough_index + 1
+
+            # Put the average of same latitudes in the concatenated additive_current_valid_trough back in the trough_coords_matrix
+            # First sort the results by lat and lon
+            additive_current_valid_trough = additive_current_valid_trough[additive_current_valid_trough[:, 1].argsort()]
+            additive_current_valid_trough = additive_current_valid_trough[additive_current_valid_trough[:, 0].argsort(kind='mergesort')]
+
+            # Now find the min and max for each lat
+            last_lat = additive_current_valid_trough[0, 0]
+            lowest_lons = np.zeros((np.size(self.trough_coords_matrix, 0), 2))
+            lowest_lons[0, :] = additive_current_valid_trough[0]
+            highest_lons = np.zeros((np.size(self.trough_coords_matrix, 0), 2))
+            points_counter = 0
+            for current_lat_index in range(np.size(additive_current_valid_trough,0)):
+                current_lat = additive_current_valid_trough[current_lat_index, 0]
+                if (current_lat > last_lat) and (current_lat_index != 0): # Going to next lat. Record the lowest lon.
+                    highest_lons[points_counter, :] = additive_current_valid_trough[current_lat_index-1, :]
+                    points_counter = points_counter + 1
+                    lowest_lons[points_counter, :] = additive_current_valid_trough[current_lat_index, :]
+                    last_lat = current_lat
+            highest_lons[points_counter, :] = additive_current_valid_trough[-1, :]
+
+            # Average the min and max for each lat and create the average_trough
+            average_trough = np.zeros((np.size(self.trough_coords_matrix, 0), 2))
+            average_trough[:,0] = lowest_lons[:,0]
+            average_trough[:,1] = (lowest_lons[:,1] + highest_lons[:,1])/2
+
+            # Insert the average_trough back in the trough_coords_matrix
+            self.trough_coords_matrix[:, current_valid_troughs_counter * 2:current_valid_troughs_counter * 2 + 2] = average_trough
 
             current_valid_troughs_counter = current_valid_troughs_counter + 1
 
@@ -258,6 +304,9 @@ class Calculate_RST:
 
             # Check if it is a better choice for this day's classification result
             if current_rst_orientation_str != consts.rst_orientation_no_rst:
+                # if (self.daily_rst_classification != consts.rst_orientation_no_rst) and (self.daily_rst_classification != current_rst_orientation_str) and (current_rst_orientation_str != consts.rst_orientation_no_rst):
+                #     print("Different classifications for this date")
+                #
                 if (self.daily_rst_classification == consts.rst_orientation_no_rst) or (np.max(y_trough) >= np.max(self.trough_coords_matrix[:,2*daily_class_trough_num])):
                     # This is the first rst which has an orientation or a later rst has an orientation and is has a higher lat value
                     self.daily_rst_classification = current_rst_orientation_str

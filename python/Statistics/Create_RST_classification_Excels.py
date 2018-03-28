@@ -3,7 +3,7 @@ from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 from openpyxl import Workbook
 
 NCEP_start_year = 1979  # Can be 1979 as well
-NCEP_end_year = 2017
+NCEP_end_year = 2016
 
 # Choose if only NCEP will be done
 only_NCEP = False
