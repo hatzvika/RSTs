@@ -4,19 +4,23 @@ import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.my_interp import my_interp
 
 
-# This function returns the RST lat/lon array (if any)
+# This function returns the RST lat/lon array (if any) of the given day
 # after interpolating the SLP data if needed.
 # The method is looking at points in a distance of 1.5 degress
 # trying to find if the middle point is the local minima
 
+
+# IMPORTANT: the geostrophic_vorticity_map and slp_data MUST have the same resolution and size!
 class Calculate_RST:
-    def __init__(self, slp_data, resolution, slp_check_distance, lats, lons):
+    def __init__(self, slp_data, geostrophic_vorticity_map, resolution, slp_check_distance, lats, lons):
         # These lines of code are used by both methods
         if consts.rst_resolution != resolution:
             # The data and the rst resolutions are different. Needs the interpolation for the find_trough function
             self.slp_data, self.lats, self.lons = my_interp(slp_data, lats, lons, consts.rst_resolution, consts.interpolation_method)
+            self.geostrophic_vorticity_map, _, _ = my_interp(geostrophic_vorticity_map, lats, lons, consts.rst_resolution, consts.interpolation_method)
         else:
             self.slp_data = slp_data
+            self.geostrophic_vorticity_map = geostrophic_vorticity_map
             self.lats = lats
             self.lons = lons
 
@@ -302,15 +306,32 @@ class Calculate_RST:
             # Find the orientation of the RST
             current_rst_orientation_str = self._Check_RST_orientation(x_trough, y_trough)
 
-            # Check if it is a better choice for this day's classification result
+            # Check if it is a better choice for this day's classification result (only when it is not "No_RST")
             if current_rst_orientation_str != consts.rst_orientation_no_rst:
-                # if (self.daily_rst_classification != consts.rst_orientation_no_rst) and (self.daily_rst_classification != current_rst_orientation_str) and (current_rst_orientation_str != consts.rst_orientation_no_rst):
-                #     print("Different classifications for this date")
-                #
-                if (self.daily_rst_classification == consts.rst_orientation_no_rst) or (np.max(y_trough) >= np.max(self.trough_coords_matrix[:,2*daily_class_trough_num])):
-                    # This is the first rst which has an orientation or a later rst has an orientation and is has a higher lat value
+                change_rst_orintation = False
+                if self.daily_rst_classification == consts.rst_orientation_no_rst:
+                    # This is the first rst which has an orientation
+                    change_rst_orintation = True
+                else: # Start comparing the current daily RST and the competing trough
+                    current_daily_trough = self.trough_coords_matrix[:,2*daily_class_trough_num:2*daily_class_trough_num+2]
+                    current_daily_trough = current_daily_trough[~(current_daily_trough == 0).all(1)]
+                    current_daily_GV_score = self._calculate_GV_score(current_daily_trough)
+                    trough_coords_score = self._calculate_GV_score(trough_coords)
+                    if (trough_coords_score > current_daily_GV_score):
+                        change_rst_orintation = True
+
+                if change_rst_orintation:
                     self.daily_rst_classification = current_rst_orientation_str
                     daily_class_trough_num = current_RST
+
+
+                # Before the geostrpohic vorticity change:
+                # if (self.daily_rst_classification != consts.rst_orientation_no_rst) and (self.daily_rst_classification != current_rst_orientation_str) and (current_rst_orientation_str != consts.rst_orientation_no_rst):
+                #     print("Different classifications for this date")
+                # if (self.daily_rst_classification == consts.rst_orientation_no_rst) or (np.max(y_trough) >= np.max(self.trough_coords_matrix[:,2*daily_class_trough_num])):
+                #     # This is the first rst which has an orientation or a later rst has an orientation and is has a higher lat value
+                #     self.daily_rst_classification = current_rst_orientation_str
+                #     daily_class_trough_num = current_RST
 
             rst_orientation_str = rst_orientation_str + current_rst_orientation_str + ", "
 
@@ -358,3 +379,23 @@ class Calculate_RST:
             return consts.rst_orientation_west
         else:
             return consts.rst_orientation_no_rst
+
+    # This function calculates the total geostrophic vorticity across the trough.
+    # This way length and depth are both taken into account.
+    def _calculate_GV_score(self, scored_trough):
+        total_GV = 0
+        multiplier = 1/consts.interp_resolution
+        for current_point in range(np.size(scored_trough, 0)):
+            current_lat = scored_trough[current_point, 0]
+            indexed_lat = int((current_lat - self.lats[0]) * multiplier)
+
+            current_lon = scored_trough[current_point, 1]
+            current_lon_rounded_to_nearest_grid_point = round(current_lon * multiplier) / multiplier
+            indexed_rounded_lon = int((current_lon_rounded_to_nearest_grid_point - self.lons[0]) * multiplier)
+
+            current_GV_value = self.geostrophic_vorticity_map[indexed_lat, indexed_rounded_lon]
+            total_GV = total_GV + current_GV_value
+
+        return total_GV
+
+

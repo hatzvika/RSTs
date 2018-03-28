@@ -175,7 +175,7 @@ class PlotRSTs ():
             self.troughs_map, self.ridges_map = None, None
 
         # Find Red Sea Trough
-        calc_rst_obj = Calculate_RST(slp_data, resolution, consts.slp_check_distance, lats, lons)
+        calc_rst_obj = Calculate_RST(slp_data, self.geostrophic_vorticity_map, resolution, consts.slp_check_distance, lats, lons)
 
         # Find the RSTs orientations and polyfit them + get the daily_rst_classification (unless rst conditions are not met
         self.trough_coordinates_matrix, self.rst_orientation_str, self.daily_rst_classification = calc_rst_obj.get_trough_coords_matrix(only_longest_separate, polyfit_rst)
