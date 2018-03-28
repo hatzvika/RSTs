@@ -8,6 +8,7 @@ import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
+from python.utils.calculate_geostrophic_vorticity import calculate_geostrophic_vorticity
 
 class PlotRSTs ():
     def __init__(self, model_data='NCEP', data_year=1984, z_hour=12):
@@ -143,10 +144,17 @@ class PlotRSTs ():
 
         # Calculate Geostrophic Vorticity
         if show_geostrophic_vorticity:
-            # First calculate the map on the original dataset na donly then interpolate it
-            self.geostrophic_vorticity_map = self._calcualte_geostrophic_vorticity_maps(slp_data, resolution, lats, total_lat, total_lon)
+            # First calculate the map on the original dataset and only then interpolate it
+            self.geostrophic_vorticity_map = calculate_geostrophic_vorticity(slp_data, resolution, lats, total_lat, total_lon)
         else:
             self.geostrophic_vorticity_map = None
+
+        if self.is_interpolated:
+            self.geostrophic_vorticity_map = my_interp(self.geostrophic_vorticity_map,
+                                                       self.orig_data_lats,
+                                                       self.orig_data_lons,
+                                                       consts.interp_resolution,
+                                                       consts.interpolation_method)[0]
 
         # For the rest of the calculations (other then vorticity calculations, see above)
         # the data is interpolated if necessary.
@@ -178,6 +186,8 @@ class PlotRSTs ():
 
         # The final rst classification is not rst id conditions are not met.
         if not self.is_rst_condition_met:
+            if self.daily_rst_classification != consts.rst_orientation_no_rst:
+                print("RST conditions not met, while RST found")
             self.daily_rst_classification = consts.rst_orientation_no_rst
 
         return self.daily_rst_classification, slp_data, self.geostrophic_vorticity_map, self.is_rst_condition_met
@@ -239,37 +249,6 @@ class PlotRSTs ():
                                       consts.interpolation_method)[0]
 
         return vorticity_map
-
-    # Calculate Geostrophic vorticity
-    def _calcualte_geostrophic_vorticity_maps(self, slp_data, resolution, lats, total_lat, total_lon):
-        ugwind_map = np.zeros((total_lat, total_lon))
-        vgwind_map = np.zeros((total_lat, total_lon))
-        geostrophic_vorticity_map = np.zeros((total_lat, total_lon))
-        rho = 1.2754
-        omega = 7.27e-5
-        dy = 2 * resolution * 111000  # 111 Km. is the distance of 1 degree latitude. We look for the distance between 2 points.
-        for current_lat in range(1, total_lat - 1):
-            for current_lon in range(1, total_lon - 1):
-                dpx = slp_data[current_lat, current_lon + 1] - slp_data[current_lat, current_lon - 1]
-                dpy = slp_data[current_lat + 1, current_lon] - slp_data[current_lat - 1, current_lon]
-                dx = dy * math.cos(math.radians(lats[current_lat]))
-                ugwind_map[current_lat, current_lon] = (((-1) / rho) * (dpy / dy)) / (2 * omega * math.sin(math.radians(current_lat)))
-                vgwind_map[current_lat, current_lon] = (((1) / rho) * (dpx / dx)) / (2 * omega * math.sin(math.radians(current_lat)))
-
-        for current_lat in range(2, total_lat - 1):
-            for current_lon in range(2, total_lon - 1):
-                duwind = ugwind_map[current_lat + 1, current_lon] - ugwind_map[current_lat - 1, current_lon]
-                dvwind = vgwind_map[current_lat, current_lon + 1] - vgwind_map[current_lat, current_lon - 1]
-                geostrophic_vorticity_map[current_lat, current_lon] = (dvwind / dx) - (duwind / dy)
-
-        if self.is_interpolated:
-            geostrophic_vorticity_map = my_interp(geostrophic_vorticity_map,
-                                                  self.orig_data_lats,
-                                                  self.orig_data_lons,
-                                                  consts.interp_resolution,
-                                                  consts.interpolation_method)[0]
-
-        return geostrophic_vorticity_map
 
     # Calculate the mean SLP in the RST squares
     def _calculate_rst_conditions_in_boxes(self, slp_data, geostrophic_vorticity_map, lats, lons, resolution,
