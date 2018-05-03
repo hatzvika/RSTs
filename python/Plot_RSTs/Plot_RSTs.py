@@ -9,6 +9,8 @@ from python.utils.read_nc_files import read_nc_files
 from python.utils.my_interp import my_interp
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 from python.utils.calculate_geostrophic_vorticity import calculate_geostrophic_vorticity
+from python.utils.find_low_center_in_area import find_low_center_in_area
+
 
 class PlotRSTs ():
     def __init__(self, model_data='NCEP', data_year=1984, z_hour=12):
@@ -347,7 +349,7 @@ class PlotRSTs ():
         x, y = rst_map(mesh_lons, mesh_lats)
         min_slp = int(np.floor(slp_data.min()))
         max_slp = int(np.ceil(slp_data.max()))
-        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], range(min_slp, max_slp, 200), linewidths=1.5, colors='k')
+        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], range(min_slp, max_slp, 100), linewidths=1.5, colors='k')
 
         # Prepare the selected subsetmap
         subset_map = None
@@ -460,6 +462,28 @@ class PlotRSTs ():
         current_date = self.data_string_time[self.current_day]
         plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize, weight = 'bold', bbox=dict(facecolor="white", alpha=0.8))
 
+        # Show low centers if found
+        low_center_lat, low_center_lon, low_center_depth,_ = find_low_center_in_area(slp_data, lats, lons, consts.interp_resolution, 25, 32.5, 25, 35, 110, 300)
+        if low_center_lat is not None:
+            x_dot, y_dot = rst_map(low_center_lon, low_center_lat)
+            rst_map.plot(x_dot,
+                         y_dot,
+                         marker='o',
+                         fillstyle='full',
+                         color='blue',
+                         markeredgecolor='black',
+                         markersize=10)
+
+        low_center_lat, low_center_lon, low_center_depth,_ = find_low_center_in_area(slp_data, lats, lons, consts.interp_resolution, 30, 35, 35, 42.5, 110, 300)
+        if low_center_lat is not None:
+            x_dot, y_dot = rst_map(low_center_lon, low_center_lat)
+            rst_map.plot(x_dot,
+                         y_dot,
+                         marker='o',
+                         fillstyle='full',
+                         color='blue',
+                         markeredgecolor='black',
+                         markersize=10)
 
 
         return rst_map
@@ -478,6 +502,26 @@ class PlotRSTs ():
             return self.data_string_time[this_day - 1], []
         else:
             return self.data_string_time[this_day - 1], self.data_string_time[this_day + 1]
+
+    def get_daily_slp_data(self, current_day):
+        # Two ways to ask for a current day: by an integer counter from the file start or by a "DD-MM-YYYY" string
+        if type(current_day) is int:
+            self.current_day = current_day
+        else:
+            for loop_day in range(self.data_string_time.shape[0]):
+                if str(self.data_string_time[loop_day]) == current_day:
+                    self.current_day = loop_day
+                    break
+
+        interp_slp_data = self.interp_slp_data[self.current_day, :, :].squeeze()
+        return interp_slp_data
+
+    def get_lons(self):
+        return self.interp_data_lons
+
+    def get_lats(self):
+        return self.interp_data_lats
+
 
 def main():
     save_maps = False

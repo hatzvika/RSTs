@@ -2,7 +2,8 @@ import numpy as np
 
 import python.Plot_RSTs.plot_RST_constants as consts
 from python.utils.my_interp import my_interp
-
+from python.utils.find_low_center_in_area import find_low_center_in_area
+from python.utils.calculate_distance_between_two_points_on_earth import calculate_distance_between_two_points_on_earth
 
 # This function returns the RST lat/lon array (if any) of the given day
 # after interpolating the SLP data if needed.
@@ -324,8 +325,29 @@ class Calculate_RST:
                     self.daily_rst_classification = current_rst_orientation_str
                     daily_class_trough_num = current_RST
 
+                # First check in the East
+                low_center_lat, low_center_lon, low_center_depth, depth_in_one_dir = find_low_center_in_area(self.slp_data, self.lats,
+                                                                                                             self.lons,
+                                                                                                             consts.interp_resolution, 30,
+                                                                                                             35, 35, 42.5,
+                                                                                                             110, 300)
+                print(low_center_depth, depth_in_one_dir)
+                if low_center_lat is not None:
+                    if low_center_depth > 160 and depth_in_one_dir > 75:
+                        self.daily_rst_classification = consts.rst_orientation_no_rst
 
-                # Before the geostrpohic vorticity change:
+                # Then check in the West
+                low_center_lat, low_center_lon, low_center_depth, depth_in_one_dir = find_low_center_in_area(self.slp_data, self.lats,
+                                                                                                             self.lons,
+                                                                                                             consts.interp_resolution, 25,
+                                                                                                             32.5, 25,
+                                                                                                             35, 110, 300)
+                print(low_center_depth, depth_in_one_dir)
+                if low_center_lat is not None:
+                    if low_center_depth > 160 and depth_in_one_dir > 75:
+                        self.daily_rst_classification = consts.rst_orientation_no_rst
+
+                # # Before the geostrpohic vorticity change:
                 # if (self.daily_rst_classification != consts.rst_orientation_no_rst) and (self.daily_rst_classification != current_rst_orientation_str) and (current_rst_orientation_str != consts.rst_orientation_no_rst):
                 #     print("Different classifications for this date")
                 # if (self.daily_rst_classification == consts.rst_orientation_no_rst) or (np.max(y_trough) >= np.max(self.trough_coords_matrix[:,2*daily_class_trough_num])):
