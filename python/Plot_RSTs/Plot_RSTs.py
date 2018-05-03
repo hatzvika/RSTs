@@ -302,7 +302,7 @@ class PlotRSTs ():
         return is_rst_condition_met
 
     # This function will create the map according to the flags sent in the previous calculate_maps_data method call
-    def create_map(self, map_axis, show_rst_info, req_colormap):
+    def create_map(self, map_axis, show_rst_info, req_colormap, show_info=True):
         if self.is_interpolated is None:
             print("Use the calculate_maps_data method before calling create_map")
             return
@@ -389,15 +389,16 @@ class PlotRSTs ():
             rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
 
         # Print the orientation results of all found RSTs
-        if self.rst_orientation_str != "":
+        if (self.rst_orientation_str != "") and show_info:
             x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 3)
             plt.text(x_dot, y_dot, 'Orientations: ' + self.rst_orientation_str, fontsize=consts.map_text_fontsize, color='black', weight='bold',
                          bbox=dict(facecolor="white", alpha=0.8))
 
         # Print the daily classification
-        x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 4)
-        plt.text(x_dot, y_dot, 'Classification: ' + self.daily_rst_classification, fontsize=consts.map_text_fontsize, color='black', weight='bold',
-                     bbox=dict(facecolor="white", alpha=0.8))
+        if show_info:
+            x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 4)
+            plt.text(x_dot, y_dot, 'Classification: ' + self.daily_rst_classification, fontsize=consts.map_text_fontsize, color='black', weight='bold',
+                         bbox=dict(facecolor="white", alpha=0.8))
 
         # Draw the troughs and ridges dots
         if self.troughs_map is not None:
@@ -440,7 +441,7 @@ class PlotRSTs ():
             rst_map.plot(x_line, y_line, marker=None, linewidth=3, color='red')
 
             # Add the points value
-            if (self.geostrophic_vorticity_map is not None) and (self.is_interpolated):
+            if (self.geostrophic_vorticity_map is not None) and self.is_interpolated and show_info:
                 # data_string = "1st point: " + str(('%.2E' % self.geostrophic_vorticity_map[4, 6]))\
                 #               +"  2nd point: " + str(('%.2E' % self.geostrophic_vorticity_map[3, 6]))
                 # x_dot, y_dot = rst_map(consts.map_lon1 + 1, consts.map_lat2 - 2)

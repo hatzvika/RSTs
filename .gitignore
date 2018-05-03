@@ -1,3 +1,4 @@
 *.pyc
 .idea/workspace.xml
 *.nc
+python/Results/Test_success_rates/
