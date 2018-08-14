@@ -1,15 +1,15 @@
 from openpyxl import Workbook, load_workbook
 from time import strptime
 
-seasonal_trends = True  # False for monthly trends
+seasonal_trends = False  # False for monthly trends
 
 output_dir = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/'
 
 # Prepare the worksheets for the NCEP output file
 if seasonal_trends:
-    output_excel_filename_NCEP = output_dir + 'Seasonal_trends_RSTs_NCEP_1979-2016_32-38.xlsx'
+    output_excel_filename_NCEP = output_dir + 'Seasonal_trends_RSTs_NCEP_1979-2016.xlsx'
 else:
-    output_excel_filename_NCEP = output_dir + 'Monthly_trends_RSTs_NCEP_1979-2016_32-38.xlsx'
+    output_excel_filename_NCEP = output_dir + 'Monthly_trends_RSTs_NCEP_1979-2016.xlsx'
 wb_NCEP_trends = Workbook()
 ws_NCEP_NO_RSTs = wb_NCEP_trends.get_sheet_by_name("Sheet")
 ws_NCEP_NO_RSTs.title = "NO_RSTs"
@@ -20,9 +20,9 @@ ws_NCEP_All = wb_NCEP_trends.create_sheet("All RSTs")
 
 # Prepare the worksheets for the ERA output file
 if seasonal_trends:
-    output_excel_filename_ERA = output_dir + 'Seasonal_trends_RSTs_ERA_1979-2016_32-38.xlsx'
+    output_excel_filename_ERA = output_dir + 'Seasonal_trends_RSTs_ERA_1979-2016.xlsx'
 else:
-    output_excel_filename_ERA = output_dir + 'Monthly_trends_RSTs_ERA_1979-2016_32-38.xlsx'
+    output_excel_filename_ERA = output_dir + 'Monthly_trends_RSTs_ERA_1979-2016.xlsx'
 wb_ERA_trends = Workbook()
 ws_ERA_NO_RSTs = wb_ERA_trends.get_sheet_by_name("Sheet")
 ws_ERA_NO_RSTs.title = "NO_RSTs"
@@ -33,9 +33,9 @@ ws_ERA_All = wb_ERA_trends.create_sheet("All RSTs")
 
 # Prepare the worksheets for the ERA_2_5 output file
 if seasonal_trends:
-    output_excel_filename_ERA_2_5 = output_dir + 'Seasonal_trends_RSTs_ERA_2_5_1979-2016_32-38.xlsx'
+    output_excel_filename_ERA_2_5 = output_dir + 'Seasonal_trends_RSTs_ERA_2_5_1979-2016.xlsx'
 else:
-    output_excel_filename_ERA_2_5 = output_dir + 'Monthly_trends_RSTs_ERA_2_5_1979-2016_32-38.xlsx'
+    output_excel_filename_ERA_2_5 = output_dir + 'Monthly_trends_RSTs_ERA_2_5_1979-2016.xlsx'
 wb_ERA_2_5_trends = Workbook()
 ws_ERA_2_5_NO_RSTs = wb_ERA_2_5_trends.get_sheet_by_name("Sheet")
 ws_ERA_2_5_NO_RSTs.title = "NO_RSTs"
@@ -64,9 +64,9 @@ table_ERA_2_5_Central = ws_ERA_2_5_Central['B2':'AM13']
 table_ERA_2_5_All = ws_ERA_2_5_All['B2':'AM13']
 
 # Prepare the worksheets for the input classifications
-excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016_32-38.xlsx'
-excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016_32-38.xlsx'
-excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016_32-38.xlsx'
+excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1979-2016.xlsx'
+excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
+excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
 
 wb_NCEP = load_workbook(excel_filename_NCEP, read_only=True)
 ws_NCEP = wb_NCEP.active
@@ -81,7 +81,7 @@ ws_ERA_2_5 = wb_ERA_2_5.active
 table_ERA_2_5 = ws_ERA_2_5['A2':'AM367']
 
 for row in range(1, ws_NCEP.max_row-1):
-    for col in range(1, ws_NCEP.max_column):
+    for col in range(1, ws_NCEP.max_column-1):
         any_NCEP_RST = True  # A flag for marking if an RST found or not
         any_ERA_RST = True  # A flag for marking if an RST found or not
         any_ERA_2_5_RST = True  # A flag for marking if an RST found or not

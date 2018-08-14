@@ -17,9 +17,9 @@ polyfit_rst = True
 data_to_map_var = 'Geostrophic Vorticity'
 show_dots = False
 
-excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/__RST_classification_NCEP_' + str(NCEP_start_year) + '-' + str(NCEP_end_year) + '_32-38_low_centers.xlsx'
-excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/__RST_classification_ERA_1979-2016_32-38_low_centers.xlsx'
-excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/__RST_classification_ERA_2.5_1979-2016_32-38_low_centers.xlsx'
+excel_filename_NCEP = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_' + str(NCEP_start_year) + '-' + str(NCEP_end_year) + '.xlsx'
+excel_filename_ERA = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_1979-2016.xlsx'
+excel_filename_ERA_2_5 = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_ERA_2.5_1979-2016.xlsx'
 
 wb_NCEP = Workbook()
 ws_NCEP = wb_NCEP.active
@@ -32,9 +32,9 @@ if only_NCEP:
     start_year = NCEP_start_year
     end_year = NCEP_end_year
 else:
-    start_year = 1998
-    # end_year = 2016
-    end_year = 2000
+    start_year = 1979
+    end_year = 2016
+    # end_year = 2000
 
 year_list = [str(x) for x in range(start_year, end_year+1)]
 

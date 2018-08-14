@@ -15,10 +15,10 @@ polyfit_rst = True
 data_to_map_var = 'Geostrophic Vorticity'
 show_dots = False
 
-# start_year = 1998
-# end_year = 2000
-start_year = 2006
-end_year = 2006
+start_year = 1998
+end_year = 2000
+#start_year = 2006
+#end_year = 2006
 
 year_list = [str(x) for x in range(start_year, end_year+1)]
 
@@ -29,7 +29,7 @@ for current_year in year_list:
     previous_month_day = ""
     leap_year_offset = 0
     rows_counter = 2
-    for current_day in data_string_time:
+    for current_day in data_string_time[180:-1]:
         current_day_str = str(current_day)
         print(current_day_str)
 
@@ -44,26 +44,26 @@ for current_year in year_list:
         map_figure, map_axis = plt.subplots(figsize=(10, 10))
         rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True, req_colormap='coolwarm', show_info=show_info)
 
-        if save_maps:
-            # directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/All_RSTs_1998-2000/'
-            directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/Oct-May_2004_2006/'
-            map_name = current_day_str[0:10]
-            filename = directory + map_name + ".png"
-            plt.savefig(filename)
-        else:
-            plt.show()
+        # if save_maps:
+        #     # directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/All_RSTs_1998-2000/'
+        #     directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/Oct-May_2004_2006/'
+        #     map_name = current_day_str[0:10]
+        #     filename = directory + map_name + ".png"
+        #     plt.savefig(filename)
+        # else:
+        #     plt.show()
 
 
-        # if daily_rst_classification != consts.rst_orientation_no_rst:
-        #     map_figure, map_axis = plt.subplots(figsize=(10, 10))
-        #     rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True, req_colormap='coolwarm')
-        #
-        #     if save_maps:
-        #         directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/All_RSTs_1998-2000/'
-        #         map_name = current_day_str[0:10]
-        #         filename = directory + map_name + ".png"
-        #         plt.savefig(filename)
-        #     else:
-        #         plt.show()
+        if daily_rst_classification == consts.rst_orientation_no_rst:
+            map_figure, map_axis = plt.subplots(figsize=(10, 10))
+            rst_map = plotRSTs_instance.create_map(map_axis, show_rst_info=True, req_colormap='coolwarm')
+
+            if save_maps:
+                directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/No_RST_1998-2000/'
+                map_name = current_day_str[0:10]
+                filename = directory + map_name + ".png"
+                plt.savefig(filename)
+            else:
+                plt.show()
 
 

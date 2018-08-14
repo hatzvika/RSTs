@@ -13,9 +13,9 @@ maps_for_12z = True  # False = 00Z
 #############################################
 # Which DB to create a composite map for
 #############################################
-# req_DB = "NCEP"
+req_DB = "NCEP"
 # req_DB = "ERA"
-req_DB = "ERA_2_5"
+# req_DB = "ERA_2_5"
 
 # Select a season to show. DJF, MAM, JJA, SON or ALL for all of the seasons
 show_season = "ALL"
@@ -170,27 +170,27 @@ cs = rst_map.contourf(x, y, subset_map, color_space, cmap=plt.cm.get_cmap('coolw
 
 #Draw the average RST
 # Find Red Sea Trough
-calc_rst_obj = Calculate_RST(composite_slp_map, 0.5, consts.slp_check_distance, lats, lons) # 0.5 is the interpolated resolution
+calc_rst_obj = Calculate_RST(composite_slp_map, composite_geostrophic_map, 0.5, consts.slp_check_distance, lats, lons) # 0.5 is the interpolated resolution
 
 # Find the RSTs orientations and polyfit them + get the daily_rst_classification (unless rst conditions are not met
 trough_coordinates_matrix, stam, stam1 = calc_rst_obj.get_trough_coords_matrix(only_long_separate_RSTs=True, polyfit_rst=True)
 
 # Draw the RSTs, if any. First find the longest trough and then plot just the longest
-# longest_trough = 0
-# for current_RST in range(0, int(np.size(trough_coordinates_matrix, 1) / 2)):
-#     # Get the current trough columns from the trough matrix
-#     trough_coords = trough_coordinates_matrix[:, 2 * current_RST:2 * current_RST + 2]
-#     # remove all zeros from current RST
-#     trough_coords = trough_coords[~(trough_coords == 0).all(1)]
-#  #   if np.size(trough_coords, 0) > longest_trough:
-#     x_trough = trough_coords[:, 1]
-#     y_trough = trough_coords[:, 0]
-#     #longest_trough = np.size(trough_coords, 0)
-#
-# #if longest_trough > 0: # An RST was found
-#     lat_map, lon_map = rst_map(x_trough, y_trough)
-#     rst_map.plot(lat_map, lon_map, marker=None, linewidth=6, color='black')
-#     rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
+longest_trough = 0
+for current_RST in range(0, int(np.size(trough_coordinates_matrix, 1) / 2)):
+    # Get the current trough columns from the trough matrix
+    trough_coords = trough_coordinates_matrix[:, 2 * current_RST:2 * current_RST + 2]
+    # remove all zeros from current RST
+    trough_coords = trough_coords[~(trough_coords == 0).all(1)]
+ #   if np.size(trough_coords, 0) > longest_trough:
+    x_trough = trough_coords[:, 1]
+    y_trough = trough_coords[:, 0]
+    #longest_trough = np.size(trough_coords, 0)
+
+#if longest_trough > 0: # An RST was found
+    lat_map, lon_map = rst_map(x_trough, y_trough)
+    rst_map.plot(lat_map, lon_map, marker=None, linewidth=6, color='black')
+    rst_map.plot(lat_map, lon_map, marker=None, linewidth=4, color='yellow')
 
 # Draw box3 and the 2 points
 lat_array_region = [consts.rst_square3_lat1,
