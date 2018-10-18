@@ -8,7 +8,7 @@ from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 from python.Plot_RSTs.Calculate_RST import Calculate_RST
 
 # This script creates the composite maps comprising all RST types of 00Z or 12Z
-maps_for_12z = True  # False = 00Z
+maps_for_12z = False  # False = 00Z
 
 #############################################
 # Which DB to create a composite map for
@@ -18,7 +18,7 @@ req_DB = "NCEP"
 # req_DB = "ERA_2_5"
 
 # Select a season to show. DJF, MAM, JJA, SON or ALL for all of the seasons
-show_season = "ALL"
+show_season = "AM"
 
 # Decide wether to take automatic min and max values, or manual ones for the plot
 use_automatic_min_max = False
@@ -44,9 +44,17 @@ elif show_season == "MAM":
     season_month_2 = 4   # "Apr"
     season_month_3 = 5   # "May"
 elif show_season == "JJA":
-    season_month_1 = 6   # "Jun"
-    season_month_2 = 7   # "Jul"
-    season_month_3 = 8   # "Aug"
+    season_month_1 = 6  # "Jun"
+    season_month_2 = 7  # "Jul"
+    season_month_3 = 8  # "Aug"
+elif show_season == "ND":
+    season_month_1 = 11  # "Nov"
+    season_month_2 = 12  # "Dec"
+    season_month_3 = 11  # "Nov" again, because I need 3 months
+elif show_season == "AM":
+    season_month_1 = 4  # "Apr"
+    season_month_2 = 5  # "May"
+    season_month_3 = 4  # "Apr" again, because I need 3 months
 else: # for SON and for ALL (default values not to be used in case of ALL)
     season_month_1 = 9   # "Sep"
     season_month_2 = 10  # "Oct"

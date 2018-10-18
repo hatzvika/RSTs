@@ -15,12 +15,13 @@ polyfit_rst = True
 data_to_map_var = 'Geostrophic Vorticity'
 show_dots = False
 
-year = '1994'  # YYYY
-month = '10'  # MM
-day = '12'  # DD
+year = '2010'  # YYYY
+month = '11'  # MM
+day = '16'  # DD
+hour = '12'
 
-plotRSTs_instance = PlotRSTs('NCEP', int(year))
-current_day_str = year + '-' + month + '-' + day + ' 12:00:00'
+plotRSTs_instance = PlotRSTs('NCEP', int(year), int(hour))
+current_day_str = year + '-' + month + '-' + day + ' ' + hour + ':00:00'
 print(current_day_str)
 
 daily_rst_classification, slp_data, geostrophic_vorticity_map, is_rst_condition_met = plotRSTs_instance.calculate_maps_data(

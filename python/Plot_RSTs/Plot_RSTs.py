@@ -422,7 +422,7 @@ class PlotRSTs ():
                                      markeredgecolor='black',
                                      markersize=5)
 
-        if show_rst_info: # Draw box3 and the 2 points
+        if True: #show_rst_info: # Draw box3 and the 2 points
             lat_array_region = [consts.rst_square3_lat1,
                                 consts.rst_square3_lat1,
                                 consts.rst_square3_lat2,
@@ -436,9 +436,22 @@ class PlotRSTs ():
             x_region, y_region = rst_map(lon_array_region, lat_array_region)
             rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
 
-            x_line, y_line = rst_map([consts.central_cross_line_lon, consts.central_cross_line_lon], [consts.central_cross_line_lat1, consts.central_cross_line_lat2])
-            rst_map.plot(x_line, y_line, marker=None, linewidth=6, color='black')
-            rst_map.plot(x_line, y_line, marker=None, linewidth=3, color='red')
+            lat_array_region = [27.5,
+                                27.5,
+                                37.5,
+                                37.5,
+                                27.5]
+            lon_array_region = [30,
+                                40,
+                                40,
+                                30,
+                                30]
+            x_region, y_region = rst_map(lon_array_region, lat_array_region)
+            rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black', linestyle='--')
+
+            # x_line, y_line = rst_map([consts.central_cross_line_lon, consts.central_cross_line_lon], [consts.central_cross_line_lat1, consts.central_cross_line_lat2])
+            # rst_map.plot(x_line, y_line, marker=None, linewidth=6, color='black')
+            # rst_map.plot(x_line, y_line, marker=None, linewidth=3, color='red')
 
             # Add the points value
             if (self.geostrophic_vorticity_map is not None) and self.is_interpolated and show_info:

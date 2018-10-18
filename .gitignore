@@ -3,3 +3,6 @@
 *.nc
 python/Results/Test_success_rates/
 Docs/Poster for Sep-2018/Images/
+*.png
+*.psd
+*.zip
