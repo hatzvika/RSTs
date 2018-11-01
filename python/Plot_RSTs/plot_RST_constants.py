@@ -1,7 +1,7 @@
 # This file holds some values used by the Plot_RSTs script and which are seldom changed.
 
 # The location of the data files
-raw_data_prefix = "C:/Users/hatzv/Documents/Geography/RSTs/python/Plot_RSTs/Sample Data/"
+raw_data_prefix = "C:/Users/hatzv/Documents/Geography/RSTs/python/Data/"
 
 # The interpolation resolution of the maps' data (not for the find_torugh method)
 interp_resolution = 0.5  # This is the interpolated resolution(degrees) we aim for

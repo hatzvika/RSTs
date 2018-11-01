@@ -2,16 +2,16 @@ from python.Plot_RSTs.Plot_RSTs import PlotRSTs
 #import numpy as np
 from openpyxl import Workbook
 
-NCEP_start_year = 1979  # Can be 1979 as well
-NCEP_end_year = 2016
+NCEP_start_year = 1948  # Can be 1979 as well
+NCEP_end_year = 2017
 
 # Choose if only NCEP will be done
-only_NCEP = False
+only_NCEP = True
 
 # Parameters for the calculations that can change
 use_interpolation = True
 only_longest_separate = True
-polyfit_rst = True
+polyfit_rst = False
 
 # Parameters for the calculations that can't change
 data_to_map_var = 'Geostrophic Vorticity'
@@ -45,7 +45,7 @@ for current_year in year_list:
     if not only_NCEP:
         plotRSTs_ERA_instance = PlotRSTs('ERA_Interim', current_year)
         plotRSTs_ERA_25_instance = PlotRSTs('ERA Int 2.5', current_year)
-    data_string_time = plotRSTs_ERA_25_instance.data_string_time
+    data_string_time = plotRSTs_NCEP_instance.data_string_time
     previous_month_day = ""
     leap_year_offset = 0
     rows_counter = 2
