@@ -4,7 +4,7 @@ server = ECMWFDataServer()
 
 # This script downloads ERA-Interim forecasts, on pressure levels or surface.
 # Adapt the script to your requirements.
-for current_year in range (2016, 2018):
+for current_year in range (2018, 2019):
     for param_str in ["151.128", "131.128", "132.128"]:
         if param_str == "151.128":
             levtype_str = "sfc"
@@ -20,7 +20,8 @@ for current_year in range (2016, 2018):
                 param_name = "vwind"
             target_str = param_name + "_ERA_Int_2.5_850hPa_10-50N_20-50E_full_" + str(current_year) + ".nc"
 
-        date_str = str(current_year) + "-01-01/to/" + str(current_year) + "-12-31"
+        # date_str = str(current_year) + "-01-01/to/" + str(current_year) + "-12-31"
+        date_str = str(current_year) + "-01-01/to/" + str(current_year) + "-11-09"
 
         server.retrieve({
             # Specify the ERA-Interim data archive. Don't change.

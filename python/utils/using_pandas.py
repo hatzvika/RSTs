@@ -4,7 +4,7 @@ from pandas import ExcelWriter
 import win32clipboard as clipboard
 
 
-df = pd.read_excel('C:/Users/hatzv/Documents/Geography/RSTs/python/Statistics/Results/RST_classification_NCEP_1948-2017.xlsx')
+df = pd.read_excel('C:/Users/hatzv/Documents/Geography/RSTs/python/Analysis/Results/RST_classification_NCEP_1948-2017.xlsx')
 my_array = np.transpose(np.array(df))
 my_array = my_array.reshape((366 * 70))
 

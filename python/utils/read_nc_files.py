@@ -10,6 +10,7 @@ import numpy as np
 def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
     file_nc = Dataset(filename)
 
+    level_str = []
     variable_list = list(file_nc.variables.keys())
     for current_var in range(len(variable_list)):
         variable_name = variable_list[current_var]
@@ -19,11 +20,17 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
             lat_str = variable_name
         elif variable_name.startswith('time'):
             time_str = variable_name
+        elif variable_name.startswith('level'):
+            level_str = variable_name
         else:
             data_str = variable_name
 
     # flipping the data and lats because nc files come with descending lats
     if flip_lats:
+        # if level_str == []:
+        #     file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :]), 1)
+        # else:
+        #     file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :, :]), 2)
         file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :]), 1)
         file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:

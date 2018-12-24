@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 
 
-for year in range(1979, 2016):
+for year in range(1979, 2018):
     input_directory = 'C:/Users/hatzv/Documents/Geography/Post-doc/Results/DB for the knowledge center/Parenthood DB/'
     input_filename = 'detailed_parenthood_DB_01_Sep_' + str(year) + '-31_Aug_' + str(year + 1) + '.xlsx'
     parenthood_df = pd.read_excel(input_directory + input_filename)

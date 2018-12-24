@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from mpl_toolkits.basemap import Basemap
 
 # My imports
@@ -347,9 +348,12 @@ class PlotRSTs ():
         mesh_lons, mesh_lats = np.meshgrid(lons[lon1_index:lon2_index + 1], lats[lat1_index:lat2_index + 1])
 
         x, y = rst_map(mesh_lons, mesh_lats)
-        min_slp = int(np.floor(slp_data.min()))
-        max_slp = int(np.ceil(slp_data.max()))
-        rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1], range(min_slp, max_slp, 100), linewidths=1.5, colors='k')
+        min_slp = int(np.floor(slp_data.min())/100)
+        max_slp = int(np.ceil(slp_data.max())/100)
+        CS = rst_map.contour(x, y, slp_data[lat1_index:lat2_index + 1, lon1_index:lon2_index + 1]/100, range(min_slp, max_slp, 1), linewidths=1.5, colors='k')
+
+        # The following is for plotting with labels for papers figures
+        # plt.clabel(CS, inline=1, fontsize=13, fmt='%d')
 
         # Prepare the selected subsetmap
         subset_map = None
@@ -373,7 +377,13 @@ class PlotRSTs ():
             cs = rst_map.contourf(x, y, subset_map, 10, cmap=plt.cm.get_cmap(req_colormap), vmin=min_value, vmax=max_value)
 
             # Add Colorbar
-            plt.colorbar(cs)
+            # plt.colorbar(cs)
+
+            # The following is used instead for specific outputs, like for paper figures, to allow same colormap for different days.
+            m = plt.cm.ScalarMappable(cmap=cm.coolwarm)
+            m.set_array(subset_map)
+            m.set_clim(-0.0003, 0.0003)
+            plt.colorbar(m, boundaries=np.arange(-0.0003, 0.00031, 0.00005))
 
         # Draw the RSTs, if any
         for current_RST in range(0, int(np.size(self.trough_coordinates_matrix, 1) / 2)):
@@ -422,7 +432,7 @@ class PlotRSTs ():
                                      markeredgecolor='black',
                                      markersize=5)
 
-        if True: #show_rst_info: # Draw box3 and the 2 points
+        if show_rst_info: # Draw box3 and the 2 points
             lat_array_region = [consts.rst_square3_lat1,
                                 consts.rst_square3_lat1,
                                 consts.rst_square3_lat2,
@@ -436,18 +446,19 @@ class PlotRSTs ():
             x_region, y_region = rst_map(lon_array_region, lat_array_region)
             rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black')
 
-            lat_array_region = [27.5,
-                                27.5,
-                                37.5,
-                                37.5,
-                                27.5]
-            lon_array_region = [30,
-                                40,
-                                40,
-                                30,
-                                30]
-            x_region, y_region = rst_map(lon_array_region, lat_array_region)
-            rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black', linestyle='--')
+            # # Draw the area of the synoptic classification algorithm of Pinhas
+            # lat_array_region = [27.5,
+            #                     27.5,
+            #                     37.5,
+            #                     37.5,
+            #                     27.5]
+            # lon_array_region = [30,
+            #                     40,
+            #                     40,
+            #                     30,
+            #                     30]
+            # x_region, y_region = rst_map(lon_array_region, lat_array_region)
+            # rst_map.plot(x_region, y_region, marker=None, linewidth = 3, color='black', linestyle='--')
 
             # x_line, y_line = rst_map([consts.central_cross_line_lon, consts.central_cross_line_lon], [consts.central_cross_line_lat1, consts.central_cross_line_lat2])
             # rst_map.plot(x_line, y_line, marker=None, linewidth=6, color='black')
@@ -474,7 +485,7 @@ class PlotRSTs ():
         # Add the date
         x_dot, y_dot = rst_map(consts.map_lon1+1, consts.map_lat2-1)
         current_date = self.data_string_time[self.current_day]
-        plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize, weight = 'bold', bbox=dict(facecolor="white", alpha=0.8))
+        plt.text(x_dot, y_dot, current_date, fontsize=consts.map_text_fontsize+10, weight='bold', bbox=dict(facecolor="white", boxstyle='round'), va='center')
 
         # Show low centers if found
         low_center_lat, low_center_lon, low_center_depth,_ = find_low_center_in_area(slp_data, lats, lons, consts.interp_resolution, 25, 32.5, 25, 35, 110, 300)
