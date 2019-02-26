@@ -29,11 +29,10 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
     if flip_lats:
         dims = file_nc.variables[data_str].dimensions
         lat_dim_idx = list(dims).index(lat_str)
-        a=np.squeeze(file_nc.variables[data_str])
-        file_data = np.squeeze(np.flip(file_nc.variables[data_str], lat_dim_idx))
+        file_data = np.flip(file_nc.variables[data_str], lat_dim_idx)
         file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:
-        file_data = np.squeeze(file_nc.variables[data_str])
+        file_data = file_nc.variables[data_str]
         file_lats = file_nc.variables[lat_str][:]
 
     file_lons = file_nc.variables[lon_str][:]

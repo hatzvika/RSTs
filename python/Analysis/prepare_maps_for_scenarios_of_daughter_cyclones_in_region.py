@@ -27,7 +27,7 @@ gen = (temp for j in (range(0, 20), range(21, 76), range(77, 94), range(95,103))
 slide_counter = 0
 for i in gen:
     slide_counter += 1
-    if slide_counter in [18, 31, 33, 34, 35, 39, 43, 44, 45, 50, 51, 52,
+    if slide_counter in [8, 18, 31, 33, 34, 35, 39, 43, 44, 45, 50, 51, 52,
                          53, 54, 55, 56, 57, 59, 62, 64, 65, 70, 71, 72,
                          75, 78, 82, 85, 88, 90, 93, 94, 95, 96, 97, 98, 100]:
 
@@ -81,7 +81,7 @@ for i in gen:
 
             # Find the 500hPa geopotential map of the requested day
             geop_filename = Consts.raw_data_prefix + "geopotential/NCEP/geopotential_" + req_year + "_10-50N_20-50E_500.nc"
-            geop_data, geop_lats, geop_lons, _, geop_data_string_time = read_nc_files(geop_filename)
+            geop_data, geop_levels, geop_lats, geop_lons, _, geop_data_string_time = read_nc_files(geop_filename)
 
             geop_map = geop_data[index_day, :, :]
 
