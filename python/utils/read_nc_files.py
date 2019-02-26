@@ -27,18 +27,20 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
 
     # flipping the data and lats because nc files come with descending lats
     if flip_lats:
-        # if level_str == []:
-        #     file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :]), 1)
-        # else:
-        #     file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :, :]), 2)
-        file_data = np.flip(np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :]), 1)
+        dims = file_nc.variables[data_str].dimensions
+        lat_dim_idx = list(dims).index(lat_str)
+        a=np.squeeze(file_nc.variables[data_str])
+        file_data = np.squeeze(np.flip(file_nc.variables[data_str], lat_dim_idx))
         file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:
-        file_data = np.squeeze(file_nc.variables[data_str][start_time:-1:delta_time, :, :])
+        file_data = np.squeeze(file_nc.variables[data_str])
         file_lats = file_nc.variables[lat_str][:]
 
     file_lons = file_nc.variables[lon_str][:]
     file_indexed_time = file_nc.variables[time_str][start_time:-1:delta_time]
     file_string_time = num2date(file_indexed_time[:], file_nc.variables[time_str].units)
-
-    return file_data, file_lats, file_lons, file_indexed_time, file_string_time
+    if level_str:
+        file_level = file_nc.variables[level_str][:]
+        return file_data, file_level, file_lats, file_lons, file_indexed_time, file_string_time
+    else:
+        return file_data, file_lats, file_lons, file_indexed_time, file_string_time
