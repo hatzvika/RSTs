@@ -11,7 +11,7 @@ time = a.get_low_time(req_low, return_format='string')
 lat = a.get_low_lat_degrees(req_low)
 lon = a.get_low_lon_degrees(req_low)
 slp = a.get_low_lon_slp_value(req_low)
-gradient = a.get_low_lon_gradient(req_low)
+gradient = a.get_low_gradient(req_low)
 radius = a.get_low_radius(req_low)
 length = a.get_total_lows()
 

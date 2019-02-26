@@ -46,7 +46,7 @@ class TracksDB:
     def get_low_lon_slp_value(self, low_id):
         return int(self.lows_list[low_id-1, 7])
 
-    def get_low_lon_gradient(self, low_id):
+    def get_low_gradient(self, low_id):
         return int(self.lows_list[low_id-1, 8])
 
     def get_low_radius(self, low_id):
