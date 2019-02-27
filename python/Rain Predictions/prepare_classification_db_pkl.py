@@ -12,8 +12,6 @@ from python.utils.read_nc_files import read_nc_files
 
 
 hour = 12 # xxZ of each day
-start_year = 1991
-end_year = 2008
 
 data_directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Data/Rain Data/NCEP/'
 
