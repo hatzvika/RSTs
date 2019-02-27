@@ -25,7 +25,7 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
         else:
             data_str = variable_name
 
-    if (level_str == []) or (lon_str == []) or (lat_str == []) or (time_str == []) or (data_str == []):
+    if (lon_str == []) or (lat_str == []) or (time_str == []) or (data_str == []):
         print('Something is wrong whle opening ' + filename)
 
     # flipping the data and lats because nc files come with descending lats
