@@ -8,9 +8,9 @@ import numpy as np
 
 
 def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
-    file_nc = Dataset(filename)
+    level_str, lon_str, lat_str, time_str, data_str = [], [], [], [], []
 
-    level_str = []
+    file_nc = Dataset(filename)
     variable_list = list(file_nc.variables.keys())
     for current_var in range(len(variable_list)):
         variable_name = variable_list[current_var]
@@ -25,14 +25,17 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
         else:
             data_str = variable_name
 
+    if (level_str == []) or (lon_str == []) or (lat_str == []) or (time_str == []) or (data_str == []):
+        print('Something is wrong whle opening ' + filename)
+
     # flipping the data and lats because nc files come with descending lats
     if flip_lats:
         dims = file_nc.variables[data_str].dimensions
         lat_dim_idx = list(dims).index(lat_str)
-        file_data = np.flip(file_nc.variables[data_str], lat_dim_idx)
+        file_data = np.flip(file_nc.variables[data_str][start_time:-1:delta_time], lat_dim_idx)
         file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:
-        file_data = file_nc.variables[data_str]
+        file_data = file_nc.variables[data_str][start_time:-1:delta_time]
         file_lats = file_nc.variables[lat_str][:]
 
     file_lons = file_nc.variables[lon_str][:]
