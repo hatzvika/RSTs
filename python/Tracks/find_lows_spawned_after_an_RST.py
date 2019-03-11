@@ -6,7 +6,7 @@ start_year = 1979
 end_year = 2017  # 2011
 
 spawn_lat1 = 30
-spawn_lat2 = 36
+spawn_lat2 = 38
 spawn_lon1 = 30
 spawn_lon2 = 38
 

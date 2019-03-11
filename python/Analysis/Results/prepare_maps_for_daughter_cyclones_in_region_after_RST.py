@@ -17,13 +17,13 @@ map_lon1 = 20
 map_lon2 = 45
 
 # Read the dates, sorted by bigeest lat difference from parent
-df = pd.read_excel('C:/Users/hatzv/Documents/Geography/RSTs/python/Results/RST_lows.xlsx', 'Sheet1')
-subdf = df.sort_values(by=['Lat Difference'], ascending=False)
+df = pd.read_excel('C:/Users/hatzv/Documents/Geography/RSTs/python/Results/RST_lows_after_RST.xlsx', 'Sheet1')
+subdf = df.sort_values(by=['Max Radius 48'], ascending=False)
 
 # (find problem with 20)
-gen = (temp for j in (range(0, 20), range(21, 76), range(77, 94), range(95,103)) for temp in j)
+# gen = (temp for j in (range(0, 20), range(21, 76), range(77, 94), range(95,103)) for temp in j)
 # gen = (temp for j in (range(77, 94), range(95,103)) for temp in j)
-for i in gen:
+for i in range(100): #gen:
     # set the requested day
     req_date = subdf.iloc[i]['Date']
     req_year = req_date[0:4]
@@ -77,9 +77,8 @@ for i in gen:
     fig = plt.figure(figsize=[16, 16*1080/1920])
 
     # Plot the main title with all the information
-    lat_diff = str(subdf.iloc[i]['Lat Difference'])
     track_length_hours = str((len(curr_track)-1)*6) + ' Hrs'
-    fig.suptitle(req_date + '\nLat Diff: ' + lat_diff + ', Track Length: ' + track_length_hours + ', Start Radius: ' + str(start_gradient) +\
+    fig.suptitle(req_date + '\nTrack Length: ' + track_length_hours + ', Start Radius: ' + str(start_gradient) +\
                  ', Max Radius: ' + str(max_gradient) + ', Max Radius in 48 Hrs: ' + str(max_gradient_48), fontsize=20)
 
 

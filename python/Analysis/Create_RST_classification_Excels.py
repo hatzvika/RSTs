@@ -52,25 +52,25 @@ for current_year in year_list:
     for current_day in data_string_time:
         current_day_str = str(current_day)
         print(current_day_str)
-        NCEP_daily_rst_classification,_,_,_ = plotRSTs_NCEP_instance.calculate_maps_data(current_day_str,
-                                                                                   use_interpolation=use_interpolation,
-                                                                                   data_to_map=data_to_map_var,
-                                                                                   show_dots=show_dots,
-                                                                                   only_longest_separate=only_longest_separate,
-                                                                                   polyfit_rst=polyfit_rst)
+        NCEP_daily_rst_classification, _, _, _ = plotRSTs_NCEP_instance.calculate_maps_data(current_day_str,
+                                                                                            use_interpolation=use_interpolation,
+                                                                                            data_to_map=data_to_map_var,
+                                                                                            show_dots=show_dots,
+                                                                                            only_longest_separate=only_longest_separate,
+                                                                                            polyfit_rst=polyfit_rst)
         if not only_NCEP:
-            ERA_daily_rst_classification,_,_,_ = plotRSTs_ERA_instance.calculate_maps_data(current_day_str,
-                                                                                     use_interpolation=use_interpolation,
-                                                                                     data_to_map=data_to_map_var,
-                                                                                     show_dots=show_dots,
-                                                                                     only_longest_separate=only_longest_separate,
-                                                                                     polyfit_rst=polyfit_rst)
-            ERA_25_daily_rst_classification,_,_,_ = plotRSTs_ERA_25_instance.calculate_maps_data(current_day_str,
-                                                                                           use_interpolation=use_interpolation,
-                                                                                           data_to_map=data_to_map_var,
-                                                                                           show_dots=show_dots,
-                                                                                           only_longest_separate=only_longest_separate,
-                                                                                           polyfit_rst=polyfit_rst)
+            ERA_daily_rst_classification, _, _, _ = plotRSTs_ERA_instance.calculate_maps_data(current_day_str,
+                                                                                              use_interpolation=use_interpolation,
+                                                                                              data_to_map=data_to_map_var,
+                                                                                              show_dots=show_dots,
+                                                                                              only_longest_separate=only_longest_separate,
+                                                                                              polyfit_rst=polyfit_rst)
+            ERA_25_daily_rst_classification, _, _, _ = plotRSTs_ERA_25_instance.calculate_maps_data(current_day_str,
+                                                                                                    use_interpolation=use_interpolation,
+                                                                                                    data_to_map=data_to_map_var,
+                                                                                                    show_dots=show_dots,
+                                                                                                    only_longest_separate=only_longest_separate,
+                                                                                                    polyfit_rst=polyfit_rst)
 
         current_month_day = current_day_str[5:10]
         if (previous_month_day == "02-28") and (current_month_day != "02-29"):
