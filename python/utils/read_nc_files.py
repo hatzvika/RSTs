@@ -22,6 +22,9 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
             time_str = variable_name
         elif variable_name.startswith('level'):
             level_str = variable_name
+        elif variable_name.startswith('climatology_bounds') or variable_name.startswith('valid_yr_count'):
+            # Encountered this in the long term monthely mean files.
+            pass
         else:
             data_str = variable_name
 
@@ -32,14 +35,14 @@ def read_nc_files(filename, start_time=0, delta_time=1, flip_lats=True):
     if flip_lats:
         dims = file_nc.variables[data_str].dimensions
         lat_dim_idx = list(dims).index(lat_str)
-        file_data = np.flip(file_nc.variables[data_str][start_time:-1:delta_time], lat_dim_idx)
+        file_data = np.flip(file_nc.variables[data_str][start_time::delta_time], lat_dim_idx)
         file_lats = np.flip(file_nc.variables[lat_str][:], 0)
     else:
-        file_data = file_nc.variables[data_str][start_time:-1:delta_time]
+        file_data = file_nc.variables[data_str][start_time::delta_time]
         file_lats = file_nc.variables[lat_str][:]
 
     file_lons = file_nc.variables[lon_str][:]
-    file_indexed_time = file_nc.variables[time_str][start_time:-1:delta_time]
+    file_indexed_time = file_nc.variables[time_str][start_time::delta_time]
     file_string_time = num2date(file_indexed_time[:], file_nc.variables[time_str].units)
     if level_str:
         file_level = file_nc.variables[level_str][:]
