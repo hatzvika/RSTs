@@ -1,7 +1,7 @@
 from sys import version_info
 
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib.pyplot as plt
 
 from python.Plot_RSTs.Plot_RSTs import PlotRSTs
@@ -318,14 +318,14 @@ class plot_RST_GUI:
             # The map is drawn inside the current GUI
             # Create the tk.DrawingArea
             canvas = FigureCanvasTkAgg(map_figure, master=self.frame_map)
-            canvas.show()
+            canvas.draw()
             canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
 
             # Add the toolbar in a different frame and remove the x,y coords from appearing
             for child in self.frame_nav_toolbar.winfo_children():
                 child.destroy()
             map_axis.format_coord = lambda x, y: ''
-            toolbar = NavigationToolbar2TkAgg(canvas, self.frame_nav_toolbar)
+            toolbar = NavigationToolbar2Tk(canvas, self.frame_nav_toolbar)
             toolbar.update()
             # canvas._tkcanvas.grid(row=1, column=0)
         else:
@@ -335,10 +335,10 @@ class plot_RST_GUI:
 
             # a tk.DrawingArea
             canvas = FigureCanvasTkAgg(map_figure, master=main_seperate)
-            canvas.show()
+            canvas.draw()
             canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-            toolbar = NavigationToolbar2TkAgg(canvas, main_seperate)
+            toolbar = NavigationToolbar2Tk(canvas, main_seperate)
             toolbar.update()
             canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 

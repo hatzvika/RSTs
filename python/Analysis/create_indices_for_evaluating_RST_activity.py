@@ -14,8 +14,8 @@ start_year = 1979
 end_year = 2017
 
 excel_headers = ['Date', 'Max wind speed 300', 'Max wind speed 200', 'Max geost vort SLP', 'Average geost vort SLP', 'Pressure drop SLP',
-                 'Moisture flux Y integral 850-500', 'Moisture flux Y 700', 'Precipitable water 925-850', 'Vorticity advection 500',
-                 'Vorticity advection 300', 'U/V 500', 'U/V 700', 'Vorticity 500', 'GPH anomaly 500', 'Wind Speed 500',
+                 'Moisture flux Y integral 850-500', 'Moisture flux Y 700', 'Precipitable water 925-500', 'Vorticity advection 500',
+                 'Vorticity advection 300', 'V/U 500', 'V/U 700', 'Vorticity 500', 'GPH anomaly 500', 'Wind Speed 500',
                  'temperature difference 850-500', 'Propagation speed of upper cyclonic center 500',
                  'Intensification rate of upper cyclonic center 500', 'Relative location of max. upper vorticity 500']
 final_list = [excel_headers]

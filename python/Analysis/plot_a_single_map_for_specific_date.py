@@ -20,22 +20,14 @@ month = '01'  # MM
 day = '01'  # DD
 hour = '00'
 
-dates_tuple_list = [('2000', '01', '01', '00'),
-                    ('2000', '01', '01', '06'),
-                    ('2000', '01', '01', '12'),
-                    ('2000', '01', '01', '18'),
-                    ('2000', '01', '02', '00'),
-                    ('2000', '01', '02', '06'),
-                    ('2000', '01', '02', '12'),
-                    ('2000', '01', '02', '18'),
-                    ('2000', '01', '03', '00'),
-                    ('2000', '01', '03', '06'),
-                    ('2000', '01', '03', '12'),
-                    ('2000', '01', '03', '18'),
-                    ('2000', '01', '04', '00'),
-                    ('2000', '01', '04', '06'),
-                    ('2000', '01', '04', '12'),
-                    ('2000', '01', '04', '18')]
+dates_tuple_list = [('2015', '10', '25', '00'),
+                    ('2015', '10', '25', '06'),
+                    ('2015', '10', '25', '12'),
+                    ('2015', '10', '25', '18'),
+                    ('2015', '10', '26', '00'),
+                    ('2015', '10', '26', '06'),
+                    ('2015', '10', '26', '12'),
+                    ('2015', '10', '26', '18'),]
 
 for year, month, day, hour in dates_tuple_list:
     plotRSTs_instance = PlotRSTs('NCEP', int(year), int(hour))
@@ -56,7 +48,7 @@ for year, month, day, hour in dates_tuple_list:
     if save_map:
         # directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/All_RSTs_1998-2000/'
         # directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Test_success_rates/Oct-May_2004_2006/'
-        directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Maps for RST event 2000-01 to 04/'
+        directory = 'C:/Users/hatzv/Documents/Geography/RSTs/python/Results/Maps for RST event 2015-10-25/'
 
         map_name = current_day_str[0:13]
         filename = directory + map_name + ".png"
